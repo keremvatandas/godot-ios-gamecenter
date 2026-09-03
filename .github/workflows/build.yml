@@ -22,6 +22,8 @@ jobs:
           mkdir -p dist/addons
           cp -R example/addons/gamecenter dist/addons/gamecenter
           cp LICENSE dist/addons/gamecenter/LICENSE
+          printf '\n----------------------------------------\n\nThe bundled binaries statically link godot-cpp:\n\n' >> dist/addons/gamecenter/LICENSE
+          cat godot-cpp/LICENSE.md >> dist/addons/gamecenter/LICENSE
           cd dist && zip -r ../gamecenter-addon.zip addons
       - uses: actions/upload-artifact@v4
         with:
