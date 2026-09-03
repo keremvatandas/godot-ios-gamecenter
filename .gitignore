@@ -1,0 +1,7 @@
+bin/
+build/
+.sconsign*.dblite
+*.o
+*.os
+.DS_Store
+example/.godot/
