@@ -14,14 +14,19 @@ if env["platform"] in ("ios", "macos"):
     env.Append(LINKFLAGS=["-framework", "GameKit", "-framework", "Foundation"])
     env.Append(CCFLAGS=["-fobjc-arc"])
 
+# The addon under the example project is the single source of truth; the
+# .gdextension there points at these paths. iOS static libs are intermediates
+# (tools/build_xcframework.sh folds them into the shipped xcframework).
+addon_bin = "example/addons/gamecenter/bin"
+
 if env["platform"] == "ios":
     lib = env.StaticLibrary(
-        "bin/libgamecenter{}{}".format(env["suffix"], env["LIBSUFFIX"]),
+        "build/libgamecenter{}{}".format(env["suffix"], env["LIBSUFFIX"]),
         source=sources,
     )
 else:
     lib = env.SharedLibrary(
-        "bin/libgamecenter{}{}".format(env["suffix"], env["SHLIBSUFFIX"]),
+        "{}/libgamecenter{}{}".format(addon_bin, env["suffix"], env["SHLIBSUFFIX"]),
         source=sources,
     )
 Default(lib)

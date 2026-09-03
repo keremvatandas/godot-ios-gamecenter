@@ -33,7 +33,9 @@ if Engine.has_singleton("GameCenterKit"):
 
 ## Install
 
-1. Copy `addon/gamecenter` into your project as `addons/gamecenter`.
+1. Download `gamecenter-addon.zip` from Releases and unzip it into your
+   project root — it merges in as `addons/gamecenter`. (Building from
+   source instead? Copy `example/addons/gamecenter` into your project.)
 2. Open the project once (the editor's scan registers the extension).
 3. In your iOS export: enable the **Game Center capability** on the Xcode
    project Godot generates (Signing & Capabilities → + Capability → Game
@@ -51,8 +53,11 @@ there, the two panel presenters are iOS-only and log that instead.
 git clone --recurse-submodules git@github.com:keremvatandas/godot-ios-gamecenter.git
 cd godot-ios-gamecenter
 tools/build_xcframework.sh   # needs Xcode + SCons
-tools/sync_example.sh        # refresh the example's addon copy
 ```
+
+Artifacts land directly in `example/addons/gamecenter/bin/` — the addon
+under the example project is the single source of truth, and the example
+consumes it exactly like a user project would.
 
 Built against godot-cpp `godot-4.5-stable` with `compatibility_minimum = "4.5"`;
 exercised on Godot 4.7.1. The API surface used (Object, signals, Engine

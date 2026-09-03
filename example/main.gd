@@ -1,8 +1,8 @@
 extends VBoxContainer
 
 ## Minimal GameCenterKit tour: authenticate, submit, open the panels.
-## Copy addon/gamecenter into this project as addons/gamecenter first
-## (tools/sync_example.sh does it), then export for iOS.
+## The addon lives in this project's addons/ and its binaries come from
+## tools/build_xcframework.sh; run that once, then export for iOS.
 
 var _log: Label
 var _gc: Object
@@ -24,6 +24,7 @@ func _ready() -> void:
 		_say("achievement ok=%s id=%s err=%s" % [ok, id, error]))
 	_button("Authenticate", func() -> void: _gc.authenticate())
 	_button("Submit 1234 to example.board", func() -> void: _gc.submit_score("example.board", 1234))
+	_button("Report example.achievement 100%", func() -> void: _gc.report_achievement("example.achievement", 100.0))
 	_button("Show leaderboard", func() -> void: _gc.show_leaderboard("example.board"))
 	_button("Show achievements", func() -> void: _gc.show_achievements())
 	_button("Toggle access point", func() -> void:

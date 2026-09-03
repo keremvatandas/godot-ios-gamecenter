@@ -17,14 +17,19 @@ jobs:
         run: pipx install scons
       - name: Build all artifacts
         run: tools/build_xcframework.sh
+      - name: Package addon (zip root is addons/, merges straight into a project)
+        run: |
+          mkdir -p dist/addons
+          cp -R example/addons/gamecenter dist/addons/gamecenter
+          cp LICENSE dist/addons/gamecenter/LICENSE
+          cd dist && zip -r ../gamecenter-addon.zip addons
       - uses: actions/upload-artifact@v4
         with:
           name: gamecenter-addon
-          path: addon/gamecenter/
+          path: dist/addons/gamecenter/
       - name: Draft release on tag
         if: startsWith(github.ref, 'refs/tags/v')
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          cd addon && zip -r ../gamecenter-addon.zip gamecenter
-          cd .. && gh release create "${GITHUB_REF_NAME}" gamecenter-addon.zip --draft --title "${GITHUB_REF_NAME}" --notes "GameCenterKit ${GITHUB_REF_NAME} — copy addon/gamecenter into your project as addons/gamecenter."
+          gh release create "${GITHUB_REF_NAME}" gamecenter-addon.zip --draft --title "${GITHUB_REF_NAME}" --notes "GameCenterKit ${GITHUB_REF_NAME} — unzip into your project root; it merges as addons/gamecenter."
