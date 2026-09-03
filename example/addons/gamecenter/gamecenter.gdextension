@@ -7,7 +7,3 @@ ios.release = "res://addons/gamecenter/bin/libgamecenter.ios.xcframework"
 ios.debug = "res://addons/gamecenter/bin/libgamecenter.ios.xcframework"
 macos.debug = "res://addons/gamecenter/bin/libgamecenter.macos.template_debug.universal.dylib"
 macos.release = "res://addons/gamecenter/bin/libgamecenter.macos.template_release.universal.dylib"
-
-[dependencies]
-ios.release = {"GameKit.framework": ""}
-ios.debug = {"GameKit.framework": ""}

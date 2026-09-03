@@ -36,11 +36,14 @@ if Engine.has_singleton("GameCenterKit"):
 1. Download `gamecenter-addon.zip` from Releases and unzip it into your
    project root — it merges in as `addons/gamecenter`. (Building from
    source instead? Copy `example/addons/gamecenter` into your project.)
-2. Open the project once (the editor's scan registers the extension).
-3. In your iOS export: enable the **Game Center capability** on the Xcode
-   project Godot generates (Signing & Capabilities → + Capability → Game
-   Center). No Info.plist keys are required.
-4. Create your leaderboards/achievements in App Store Connect; the ids you
+2. Enable **Game Center Export** under Project Settings → Plugins. This adds
+   the GameKit system framework to every generated iOS project.
+3. Open the project once (the editor's scan registers the extension).
+4. In the Godot iOS export preset, enable **Entitlements → Game Center**
+   (`entitlements/game_center=true`). The generated Xcode project inherits the
+   entitlement, so do not patch generated project files. No Info.plist keys
+   are required.
+5. Create your leaderboards/achievements in App Store Connect; the ids you
    pass to `submit_score`/`report_achievement` are the ASC ids.
 
 macOS builds of the library exist so the extension loads in the editor
@@ -60,8 +63,10 @@ under the example project is the single source of truth, and the example
 consumes it exactly like a user project would.
 
 Built against godot-cpp `godot-4.5-stable` with `compatibility_minimum = "4.5"`;
-exercised on Godot 4.7.1. The API surface used (Object, signals, Engine
-singleton registration) has been stable since 4.1.
+exercised on Godot 4.7.1. Device and simulator archives merge the matching
+godot-cpp implementation objects before XCFramework packaging; the companion
+export plugin links GameKit persistently instead of patching generated Xcode
+projects.
 
 ## License
 

@@ -6,14 +6,31 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 ADDON_BIN=example/addons/gamecenter/bin
+PACKAGE_DIR=build/xcframework
 scons platform=ios target=template_release arch=arm64 -j8
 scons platform=ios target=template_release ios_simulator=yes arch=universal -j8
 scons platform=macos target=template_debug -j8
 scons platform=macos target=template_release -j8
+
+# A static GDExtension must carry the godot-cpp implementation objects it was
+# compiled against. SCons links those objects into shared libraries, but an
+# archive produced from only `sources` contains unresolved godot::* symbols.
+# Merge into separate packaging outputs so repeated builds remain idempotent.
+rm -rf "$PACKAGE_DIR"
+mkdir -p "$PACKAGE_DIR"
+xcrun libtool -static \
+  -o "$PACKAGE_DIR/libgamecenter.ios.template_release.arm64.a" \
+  build/libgamecenter.ios.template_release.arm64.a \
+  godot-cpp/bin/libgodot-cpp.ios.template_release.arm64.a
+xcrun libtool -static \
+  -o "$PACKAGE_DIR/libgamecenter.ios.template_release.universal.simulator.a" \
+  build/libgamecenter.ios.template_release.universal.simulator.a \
+  godot-cpp/bin/libgodot-cpp.ios.template_release.universal.simulator.a
+
 rm -rf "$ADDON_BIN/libgamecenter.ios.xcframework"
 xcodebuild -create-xcframework \
-  -library build/libgamecenter.ios.template_release.arm64.a \
-  -library build/libgamecenter.ios.template_release.universal.simulator.a \
+  -library "$PACKAGE_DIR/libgamecenter.ios.template_release.arm64.a" \
+  -library "$PACKAGE_DIR/libgamecenter.ios.template_release.universal.simulator.a" \
   -output "$ADDON_BIN/libgamecenter.ios.xcframework"
 echo "artifacts:"
 ls "$ADDON_BIN"
