@@ -6,32 +6,95 @@ on:
     tags: ["v*"]
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
-  xcframework:
+  build:
     runs-on: macos-14
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           submodules: recursive
-      - name: Install SCons
-        run: pipx install scons
-      - name: Build all artifacts
-        run: tools/build_xcframework.sh
-      - name: Package addon (zip root is addons/, merges straight into a project)
+
+      - name: Install build tools
         run: |
-          mkdir -p dist/addons
-          cp -R example/addons/gamecenter dist/addons/gamecenter
-          cp LICENSE dist/addons/gamecenter/LICENSE
-          printf '\n----------------------------------------\n\nThe bundled binaries statically link godot-cpp:\n\n' >> dist/addons/gamecenter/LICENSE
-          cat godot-cpp/LICENSE.md >> dist/addons/gamecenter/LICENSE
-          cd dist && zip -r ../gamecenter-addon.zip addons
-      - uses: actions/upload-artifact@v4
+          pipx install scons
+          brew install ripgrep
+
+      - name: Run native contract tests
+        run: tools/run_cpp_tests.sh
+
+      - name: Build Apple binaries
+        run: tools/build_xcframework.sh
+
+      - name: Run repository and package tests
+        run: python3 -m unittest discover -s tests -p 'test_*.py' -v
+
+      - name: Package and validate add-on
+        run: tools/package_addon.sh
+
+      - name: Download Godot runtimes
+        id: godot
+        env:
+          GODOT_ROOT: ${{ runner.temp }}/gamecenter-godot
+        run: |
+          godot_45="$(tools/download_godot_macos.sh 4.5.2-stable "$GODOT_ROOT/4.5.2")"
+          godot_47="$(tools/download_godot_macos.sh 4.7.2-stable "$GODOT_ROOT/4.7.2")"
+          printf 'godot_45=%s\n' "$godot_45" >> "$GITHUB_OUTPUT"
+          printf 'godot_47=%s\n' "$godot_47" >> "$GITHUB_OUTPUT"
+
+      - name: Run Godot compatibility smoke tests
+        run: |
+          tools/run_godot_smoke.sh "${{ steps.godot.outputs.godot_45 }}"
+          tools/run_godot_smoke.sh "${{ steps.godot.outputs.godot_47 }}"
+
+      - name: Restore Godot iOS export template
+        uses: actions/cache@v6
+        with:
+          path: ${{ runner.temp }}/gamecenter-godot/4.5.2/editor_data/export_templates/4.5.2.stable/ios.zip
+          key: godot-ios-template-4.5.2-stable
+
+      - name: Install Godot iOS export template
+        env:
+          GODOT_ROOT: ${{ runner.temp }}/gamecenter-godot
+        run: tools/install_godot_ios_template.sh 4.5.2-stable "$GODOT_ROOT/4.5.2"
+
+      - name: Verify iOS exports and simulator link
+        run: tools/run_ios_export_smoke.sh "${{ steps.godot.outputs.godot_45 }}"
+
+      - name: Upload release archive
+        uses: actions/upload-artifact@v7
         with:
           name: gamecenter-addon
-          path: dist/addons/gamecenter/
-      - name: Draft release on tag
-        if: startsWith(github.ref, 'refs/tags/v')
+          path: dist/gamecenter-addon.zip
+          if-no-files-found: error
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Download release archive
+        uses: actions/download-artifact@v8
+        with:
+          name: gamecenter-addon
+          path: dist
+
+      - name: Verify tag matches plug-in version
+        run: |
+          plugin_version="$(sed -n 's/^version="\([^"]*\)"/\1/p' example/addons/gamecenter/plugin.cfg)"
+          test "$GITHUB_REF_NAME" = "v$plugin_version"
+
+      - name: Create draft release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "${GITHUB_REF_NAME}" gamecenter-addon.zip --draft --title "${GITHUB_REF_NAME}" --notes "GameCenterKit ${GITHUB_REF_NAME} — unzip into your project root; it merges as addons/gamecenter."
+          gh release create "${GITHUB_REF_NAME}" dist/gamecenter-addon.zip \
+            --draft \
+            --title "${GITHUB_REF_NAME}" \
+            --notes-file marketing/release-notes.md

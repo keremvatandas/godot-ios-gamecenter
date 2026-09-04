@@ -2,9 +2,10 @@
 
 ## Current status
 
-- Tasks 1-4 are complete: hardened runtime binaries now feed one validated,
-  installable Core 1.0 add-on ZIP with combined license notices and add-on docs.
-- Task 5 is next: automate Godot compatibility smoke tests and CI release gates.
+- Tasks 1-5 are complete: hardened runtime binaries now feed one validated,
+  installable Core 1.0 add-on ZIP with combined license notices, add-on docs,
+  Godot 4.5/4.7 smoke coverage, iOS export checks, and CI release gates.
+- Task 6 is next: prepare public documentation and the Store media kit.
 
 ## Decisions
 
@@ -52,6 +53,12 @@
 - 2026-09-04: package integration also verified Python 3.8 compatibility and fat
   simulator archive inspection per architecture. Python cache/coverage paths were
   added to the repository hygiene contract.
+- 2026-09-04: official Godot 4.5.2 and 4.7.2 editor/runtime smoke tests passed
+  with the plug-in enabled. The official 4.5.2 iOS export template produced both
+  debug and release Xcode projects with GameKit, the GameCenterKit XCFramework,
+  and the Game Center entitlement. An unsigned x86_64 simulator link passed; the
+  explicit architecture works around the official 4.5.2 template's simulator
+  archive containing x86_64 objects while advertising arm64 as well.
 
 ## Blockers and open questions
 
@@ -60,4 +67,5 @@
 
 ## Next step
 
-- Execute Task 5 from the implementation plan with Godot 4.5/4.7 smoke checks.
+- Execute Task 6 from the implementation plan and prepare Store-ready documentation
+  and trademark-safe media without publishing externally.
