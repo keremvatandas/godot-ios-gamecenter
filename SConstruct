@@ -12,7 +12,7 @@ sources = Glob("src/*.cpp")
 if env["platform"] in ("ios", "macos"):
     sources += Glob("src/*.mm")
     env.Append(LINKFLAGS=["-framework", "GameKit", "-framework", "Foundation"])
-    env.Append(CCFLAGS=["-fobjc-arc"])
+    env.Append(CCFLAGS=["-fobjc-arc", "-Werror=unguarded-availability-new"])
 
 # The addon under the example project is the single source of truth; the
 # .gdextension there points at these paths. iOS static libs are intermediates

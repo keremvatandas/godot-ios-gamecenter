@@ -7,10 +7,12 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 ADDON_BIN=example/addons/gamecenter/bin
 PACKAGE_DIR=build/xcframework
-scons platform=ios target=template_release arch=arm64 -j8
-scons platform=ios target=template_release ios_simulator=yes arch=universal -j8
-scons platform=macos target=template_debug -j8
-scons platform=macos target=template_release -j8
+IOS_MIN_VERSION=14.0
+MACOS_MIN_VERSION=11.0
+scons platform=ios target=template_release arch=arm64 ios_min_version="$IOS_MIN_VERSION" -j8
+scons platform=ios target=template_release ios_simulator=yes arch=universal ios_min_version="$IOS_MIN_VERSION" -j8
+scons platform=macos target=template_debug macos_deployment_target="$MACOS_MIN_VERSION" -j8
+scons platform=macos target=template_release macos_deployment_target="$MACOS_MIN_VERSION" -j8
 
 # A static GDExtension must carry the godot-cpp implementation objects it was
 # compiled against. SCons links those objects into shared libraries, but an

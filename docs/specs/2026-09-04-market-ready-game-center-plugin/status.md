@@ -2,9 +2,9 @@
 
 ## Current status
 
-- Tasks 1-3 are complete: repository hygiene, dependency-free contracts, and the
-  hardened GameKit bridge are covered by native and Godot runtime checks.
-- Task 4 is next: make Apple builds deterministic and package the exact add-on ZIP.
+- Tasks 1-4 are complete: hardened runtime binaries now feed one validated,
+  installable Core 1.0 add-on ZIP with combined license notices and add-on docs.
+- Task 5 is next: automate Godot compatibility smoke tests and CI release gates.
 
 ## Decisions
 
@@ -44,6 +44,14 @@
   `panel_failed` signal, then passed after bridge hardening. The macOS 11 debug and
   iOS 14 arm64 release targets compiled successfully; deprecated application-global
   UIKit window lookup is no longer present.
+- 2026-09-04: package contract first failed because no packager existed, then passed
+  against the generated Store-ready ZIP. The release validator confirmed iOS 14
+  arm64 device, iOS 14 arm64/x86_64 simulator, macOS 11 arm64/x86_64 debug/release,
+  the exported entry symbol, package root, manifest paths, Core 1.0 version, README,
+  and combined MIT notices. Native plus all three Python tests passed.
+- 2026-09-04: package integration also verified Python 3.8 compatibility and fat
+  simulator archive inspection per architecture. Python cache/coverage paths were
+  added to the repository hygiene contract.
 
 ## Blockers and open questions
 
@@ -52,4 +60,4 @@
 
 ## Next step
 
-- Execute Task 4 from the implementation plan with a red/green package contract.
+- Execute Task 5 from the implementation plan with Godot 4.5/4.7 smoke checks.

@@ -23,6 +23,9 @@ class RepositoryContractTests(unittest.TestCase):
             "Game.xcarchive/Info.plist",
             "Tests.xcresult/Info.plist",
             "release.zip",
+            "tests/__pycache__/test_contract.cpython-314.pyc",
+            ".pytest_cache/v/cache/nodeids",
+            ".coverage",
             ".DS_Store",
         }
         for path in expected:

@@ -18,5 +18,11 @@ compile_commands.json
 .godot/
 example/.godot/
 
+# Python test state
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+
 # macOS metadata
 .DS_Store
