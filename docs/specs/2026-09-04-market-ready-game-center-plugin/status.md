@@ -2,9 +2,9 @@
 
 ## Current status
 
-- Task 1 is complete: generated outputs are covered by explicit ignore rules while
-  Godot `.uid` source metadata remains trackable.
-- Task 2 is next: add dependency-free request validation and callback-lifetime tests.
+- Tasks 1-2 are complete: repository hygiene plus dependency-free identifier,
+  percentage, and callback-lifetime contracts are covered by executable tests.
+- Task 3 is next: harden the native GameKit bridge and its runtime behavior.
 
 ## Decisions
 
@@ -37,6 +37,9 @@
 - 2026-09-04: repository hygiene contract first failed for six missing ignore cases,
   then passed both tests after `.gitignore` was made explicit. `git diff --check`
   passed and `example/main.gd.uid` remained unignored.
+- 2026-09-04: native contract test first failed because the helper did not exist,
+  then passed under C++17 with warnings treated as errors. Repository contract tests
+  and `git diff --check` also passed, with no test binary left in the worktree.
 
 ## Blockers and open questions
 
@@ -45,4 +48,4 @@
 
 ## Next step
 
-- Execute Task 2 from the implementation plan with a red/green native test cycle.
+- Execute Task 3 from the implementation plan with a red/green Godot runtime cycle.
