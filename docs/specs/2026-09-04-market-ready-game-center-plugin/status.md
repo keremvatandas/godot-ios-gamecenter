@@ -2,13 +2,13 @@
 
 ## Current status
 
-- Tasks 1-6 are complete: hardened runtime binaries now feed one validated,
+- Tasks 1-7 are complete: hardened runtime binaries now feed one validated,
   installable Core 1.0 add-on ZIP with combined license notices, add-on docs,
   Godot 4.5/4.7 smoke coverage, iOS export checks, and CI release gates.
 - Public documentation, Store copy, release notes/checklist, and a verified 1280 x 720
   trademark-safe Store thumbnail are ready for review.
-- Task 7 is next: run the complete release-candidate verification and stop before any
-  external publication.
+- The automated release candidate is ready for the maintainer's post-change physical
+  device sandbox test and publication decisions. No external publication was performed.
 
 ## Decisions
 
@@ -66,13 +66,29 @@
   then passed after a generated banner was reviewed and resampled to exactly
   1280 x 720. Repository documentation, Core 1.0 changelog, Store fields, release
   notes, and the publication/device checklist were prepared without publishing them.
+- 2026-09-04: final release-candidate verification passed the native contract test,
+  all four Python tests, full Apple artifact build, package creation plus an independent
+  validation pass, `actionlint`, `git diff --check`, official Godot 4.5.2 and 4.7.2
+  editor/runtime smoke checks, debug/release iOS exports, and an unsigned x86_64
+  simulator link. The example Xcode link emitted only the official template's three
+  empty privacy-description warnings. The ZIP contains 17 entries rooted exclusively
+  at `addons/gamecenter/`; its SHA-256 is
+  `26dc8682fa1c07669ed2d3bae382e4dea489e5bf8c99cc8cb2fec10991346bb0`.
+- 2026-09-04: every commit subject from the approved baseline through the release
+  candidate matches the English Conventional Commits pattern. Commit bodies contain
+  no co-author, generated-by, or AI-assistance trailers.
 
 ## Blockers and open questions
 
-- Gridlord name usage, repository visibility, public version/tag, release publication,
-  and Store submission remain release-stage decisions.
+- Gridlord proved the pre-hardening package worked, but the post-change release
+  candidate has not yet completed the physical-device sandbox checklist. Authentication,
+  score, achievement, both panels, access point, modal presentation, and entitlement
+  must be rerun before claiming device validation for this exact candidate.
+- Public Gridlord wording, repository visibility, GitHub description/topics, tag
+  `v1.0.0`, draft release publication, and Store upload/submission remain explicit
+  maintainer decisions.
 
 ## Next step
 
-- Execute Task 7 from the implementation plan, record the exact release-candidate
-  results, and hand off the external publication decisions to the maintainer.
+- Run the physical-device checklist in Gridlord or the example app, review the Store
+  draft, then explicitly approve whichever external publication actions should proceed.
