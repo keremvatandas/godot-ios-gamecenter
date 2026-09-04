@@ -2,8 +2,9 @@
 
 ## Current status
 
-- Written specification and detailed test-first implementation plan are approved/ready.
-- Implementation is starting with repository hygiene and contract-test scaffolding.
+- Task 1 is complete: generated outputs are covered by explicit ignore rules while
+  Godot `.uid` source metadata remains trackable.
+- Task 2 is next: add dependency-free request validation and callback-lifetime tests.
 
 ## Decisions
 
@@ -33,6 +34,9 @@
   corrected `.gitignore` rules, English Conventional Commits, and no AI labels/trailers.
 - 2026-09-04: detailed implementation plan written and self-reviewed at
   `docs/superpowers/plans/2026-09-04-gamecenterkit-core-1-0.md`.
+- 2026-09-04: repository hygiene contract first failed for six missing ignore cases,
+  then passed both tests after `.gitignore` was made explicit. `git diff --check`
+  passed and `example/main.gd.uid` remained unignored.
 
 ## Blockers and open questions
 
@@ -41,4 +45,4 @@
 
 ## Next step
 
-- Execute Task 1 from the implementation plan with a red/green test cycle.
+- Execute Task 2 from the implementation plan with a red/green native test cycle.

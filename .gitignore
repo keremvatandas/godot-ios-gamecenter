@@ -1,9 +1,22 @@
+# Native build products
 .worktrees/
 bin/
 build/
 dist/
 .sconsign*.dblite
+compile_commands.json
 *.o
 *.os
-.DS_Store
+*.dSYM/
+*.xcarchive/
+*.xcresult/
+
+# Packaged releases
+*.zip
+
+# Godot import/editor state
+.godot/
 example/.godot/
+
+# macOS metadata
+.DS_Store
