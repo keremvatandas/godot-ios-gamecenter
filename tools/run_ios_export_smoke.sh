@@ -47,8 +47,11 @@ for export_root in "$debug_root" "$release_root"; do
 	require_file "$entitlements"
 	require_match 'GameKit\.framework' "$project" 'GameKit framework reference'
 	require_match 'libgamecenter\.ios\.xcframework' "$project" 'GameCenterKit XCFramework reference'
-	entitlements_dump="$(plutil -p "$entitlements")" || fail "could not parse entitlements: $entitlements"
-	rg --quiet '"com\.apple\.developer\.game-center" => true' <<< "$entitlements_dump" || \
+	# Human-readable `plutil -p` renders booleans differently across macOS
+	# versions. Extract the typed value, escaping dots in the literal key.
+	game_center_enabled="$(plutil -extract 'com\.apple\.developer\.game-center' raw -expect bool "$entitlements")" || \
+		fail "missing or invalid Game Center entitlement in $entitlements"
+	[[ "$game_center_enabled" == true ]] || \
 		fail "missing Game Center entitlement in $entitlements"
 done
 
