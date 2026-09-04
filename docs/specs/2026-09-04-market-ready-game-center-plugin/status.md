@@ -2,9 +2,9 @@
 
 ## Current status
 
-- Tasks 1-2 are complete: repository hygiene plus dependency-free identifier,
-  percentage, and callback-lifetime contracts are covered by executable tests.
-- Task 3 is next: harden the native GameKit bridge and its runtime behavior.
+- Tasks 1-3 are complete: repository hygiene, dependency-free contracts, and the
+  hardened GameKit bridge are covered by native and Godot runtime checks.
+- Task 4 is next: make Apple builds deterministic and package the exact add-on ZIP.
 
 ## Decisions
 
@@ -40,6 +40,10 @@
 - 2026-09-04: native contract test first failed because the helper did not exist,
   then passed under C++17 with warnings treated as errors. Repository contract tests
   and `git diff --check` also passed, with no test binary left in the worktree.
+- 2026-09-04: official Godot 4.5.2 runtime contract first failed on the missing
+  `panel_failed` signal, then passed after bridge hardening. The macOS 11 debug and
+  iOS 14 arm64 release targets compiled successfully; deprecated application-global
+  UIKit window lookup is no longer present.
 
 ## Blockers and open questions
 
@@ -48,4 +52,4 @@
 
 ## Next step
 
-- Execute Task 3 from the implementation plan with a red/green Godot runtime cycle.
+- Execute Task 4 from the implementation plan with a red/green package contract.

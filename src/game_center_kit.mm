@@ -4,31 +4,126 @@
 #import <GameKit/GameKit.h>
 #if TARGET_OS_IOS
 #import <UIKit/UIKit.h>
+#import <objc/runtime.h>
 #endif
 
 using namespace godot;
 
 #if TARGET_OS_IOS
-// Dismisses whichever Game Center panel is up. GameKit hands the delegate
-// the controller, so one shared dismisser serves every presentation.
-@interface GCKDismisser : NSObject <GKGameCenterControllerDelegate>
-+ (instancetype)shared;
+static char gck_panel_delegate_key;
+
+@interface GCKPanelDelegate : NSObject <GKGameCenterControllerDelegate> {
+@private
+	GameCenterKit *_owner;
+	gamecenter::CallbackLifetime::Token _token;
+	NSString *_panel;
+}
+
+- (instancetype)initWithOwner:(GameCenterKit *)owner
+		token:(const gamecenter::CallbackLifetime::Token &)token
+		panel:(NSString *)panel;
 @end
 
-@implementation GCKDismisser
-+ (instancetype)shared {
-	static GCKDismisser *instance = nil;
-	static dispatch_once_t once;
-	dispatch_once(&once, ^{ instance = [GCKDismisser new]; });
-	return instance;
+@implementation GCKPanelDelegate
+- (instancetype)initWithOwner:(GameCenterKit *)owner
+		token:(const gamecenter::CallbackLifetime::Token &)token
+		panel:(NSString *)panel {
+	self = [super init];
+	if (self != nil) {
+		_owner = owner;
+		_token = token;
+		_panel = [panel copy];
+	}
+	return self;
 }
+
 - (void)gameCenterViewControllerDidFinish:(GKGameCenterViewController *)controller {
-	[controller dismissViewControllerAnimated:YES completion:nil];
+	GameCenterKit *owner = _owner;
+	const gamecenter::CallbackLifetime::Token token = _token;
+	NSString *panel = _panel;
+	[controller dismissViewControllerAnimated:YES completion:^{
+		if (!gamecenter::CallbackLifetime::is_alive(token)) {
+			return;
+		}
+		owner->call_deferred("emit_signal", "panel_closed", String([panel UTF8String]));
+	}];
 }
 @end
 
-static UIViewController *gck_root_controller() {
-	return [[[[UIApplication sharedApplication] windows] firstObject] rootViewController];
+static UIViewController *gck_top_controller(UIViewController *controller) {
+	if (controller.presentedViewController && !controller.presentedViewController.isBeingDismissed) {
+		return gck_top_controller(controller.presentedViewController);
+	}
+	if ([controller isKindOfClass:[UINavigationController class]]) {
+		return gck_top_controller(((UINavigationController *)controller).visibleViewController);
+	}
+	if ([controller isKindOfClass:[UITabBarController class]]) {
+		return gck_top_controller(((UITabBarController *)controller).selectedViewController);
+	}
+	return controller;
+}
+
+static UIWindow *gck_window_for_scene(UIWindowScene *scene) {
+	UIWindow *fallback = nil;
+	for (UIWindow *window in scene.windows) {
+		if (window.isKeyWindow) {
+			return window;
+		}
+		if (fallback == nil && !window.isHidden && window.alpha > 0.0 &&
+				window.windowLevel == UIWindowLevelNormal) {
+			fallback = window;
+		}
+	}
+	return fallback;
+}
+
+static UIViewController *gck_presenting_controller() {
+	UIWindowScene *fallback_scene = nil;
+	for (UIScene *scene in UIApplication.sharedApplication.connectedScenes) {
+		if (![scene isKindOfClass:[UIWindowScene class]]) {
+			continue;
+		}
+		UIWindowScene *window_scene = (UIWindowScene *)scene;
+		if (gck_window_for_scene(window_scene) == nil) {
+			continue;
+		}
+		if (scene.activationState == UISceneActivationStateForegroundActive) {
+			return gck_top_controller(gck_window_for_scene(window_scene).rootViewController);
+		}
+		if (fallback_scene == nil && scene.activationState == UISceneActivationStateForegroundInactive) {
+			fallback_scene = window_scene;
+		}
+	}
+
+	UIWindow *window = fallback_scene == nil ? nil : gck_window_for_scene(fallback_scene);
+	return window == nil ? nil : gck_top_controller(window.rootViewController);
+}
+
+static void gck_emit_panel_failed(GameCenterKit *owner, const char *panel, const char *error) {
+	owner->call_deferred("emit_signal", "panel_failed", String(panel), String(error));
+}
+
+static void gck_present_panel(
+		GameCenterKit *owner,
+		const gamecenter::CallbackLifetime::Token &token,
+		GKGameCenterViewController *controller,
+		NSString *panel) {
+	UIViewController *presenter = gck_presenting_controller();
+	if (presenter == nil) {
+		gck_emit_panel_failed(owner, [panel UTF8String], "no active window can present Game Center");
+		return;
+	}
+	if ([presenter isKindOfClass:[GKGameCenterViewController class]]) {
+		gck_emit_panel_failed(owner, [panel UTF8String], "a Game Center panel is already presented");
+		return;
+	}
+
+	GCKPanelDelegate *delegate = [[GCKPanelDelegate alloc]
+			initWithOwner:owner token:token panel:panel];
+	controller.gameCenterDelegate = delegate;
+	objc_setAssociatedObject(
+			controller, &gck_panel_delegate_key, delegate, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+	[presenter presentViewController:controller animated:YES completion:nil];
 }
 #endif
 
@@ -60,17 +155,33 @@ void GameCenterKit::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("achievement_reported",
 			PropertyInfo(Variant::BOOL, "ok"), PropertyInfo(Variant::STRING, "achievement_id"),
 			PropertyInfo(Variant::STRING, "error")));
+	ADD_SIGNAL(MethodInfo("panel_closed", PropertyInfo(Variant::STRING, "panel")));
+	ADD_SIGNAL(MethodInfo("panel_failed",
+			PropertyInfo(Variant::STRING, "panel"), PropertyInfo(Variant::STRING, "error")));
+}
+
+GameCenterKit::~GameCenterKit() {
+	callback_lifetime.invalidate();
+	[GKLocalPlayer localPlayer].authenticateHandler = nil;
 }
 
 void GameCenterKit::authenticate() {
 	GKLocalPlayer *player = [GKLocalPlayer localPlayer];
 	GameCenterKit *self_ptr = this;
+	const gamecenter::CallbackLifetime::Token token = callback_lifetime.token();
 #if TARGET_OS_IOS
 	player.authenticateHandler = ^(UIViewController *view_controller, NSError *error) {
+		if (!gamecenter::CallbackLifetime::is_alive(token)) {
+			return;
+		}
 		if (view_controller != nil) {
-			// GameKit wants its sign-in sheet shown; the handler fires again
-			// with the outcome once the sheet is done.
-			[gck_root_controller() presentViewController:view_controller animated:YES completion:nil];
+			UIViewController *presenter = gck_presenting_controller();
+			if (presenter == nil) {
+				self_ptr->call_deferred("emit_signal", "authenticated", false,
+						"no active window can present Game Center authentication");
+				return;
+			}
+			[presenter presentViewController:view_controller animated:YES completion:nil];
 			return;
 		}
 		bool ok = [GKLocalPlayer localPlayer].isAuthenticated;
@@ -78,8 +189,9 @@ void GameCenterKit::authenticate() {
 	};
 #else
 	player.authenticateHandler = ^(NSViewController *view_controller, NSError *error) {
-		// macOS builds exist for editor-side development; the sign-in UI is
-		// not presented here, so an unauthenticated editor answers false.
+		if (!gamecenter::CallbackLifetime::is_alive(token)) {
+			return;
+		}
 		(void)view_controller;
 		bool ok = [GKLocalPlayer localPlayer].isAuthenticated;
 		self_ptr->call_deferred("emit_signal", "authenticated", ok, gck_error_text(error));
@@ -99,44 +211,75 @@ String GameCenterKit::player_display_name() const {
 }
 
 void GameCenterKit::submit_score(const String &leaderboard_id, int64_t score) {
+	const String normalized_id = leaderboard_id.strip_edges();
+	const CharString utf8_id = normalized_id.utf8();
+	if (!gamecenter::is_valid_identifier(utf8_id.get_data())) {
+		call_deferred("emit_signal", "score_submitted", false, leaderboard_id,
+				"leaderboard_id must not be empty");
+		return;
+	}
+
 	GameCenterKit *self_ptr = this;
-	String board_copy = leaderboard_id;
+	const gamecenter::CallbackLifetime::Token token = callback_lifetime.token();
+	const String board_copy = leaderboard_id;
 	[GKLeaderboard submitScore:(NSInteger)score
 			context:0
 			player:[GKLocalPlayer localPlayer]
-			leaderboardIDs:@[ gck_to_ns(leaderboard_id) ]
+			leaderboardIDs:@[ gck_to_ns(normalized_id) ]
 			completionHandler:^(NSError *error) {
+		if (!gamecenter::CallbackLifetime::is_alive(token)) {
+			return;
+		}
 		self_ptr->call_deferred("emit_signal", "score_submitted",
 				error == nil, board_copy, gck_error_text(error));
 	}];
 }
 
 void GameCenterKit::show_leaderboard(const String &leaderboard_id) {
-#if TARGET_OS_IOS
-	GKGameCenterViewController *vc;
-	if (@available(iOS 14.0, *)) {
-		vc = [[GKGameCenterViewController alloc]
-				initWithLeaderboardID:gck_to_ns(leaderboard_id)
-				playerScope:GKLeaderboardPlayerScopeGlobal
-				timeScope:GKLeaderboardTimeScopeAllTime];
-	} else {
-		vc = [[GKGameCenterViewController alloc] init];
+	const String normalized_id = leaderboard_id.strip_edges();
+	const CharString utf8_id = normalized_id.utf8();
+	if (!gamecenter::is_valid_identifier(utf8_id.get_data())) {
+		call_deferred("emit_signal", "panel_failed", "leaderboard",
+				"leaderboard_id must not be empty");
+		return;
 	}
-	vc.gameCenterDelegate = [GCKDismisser shared];
-	[gck_root_controller() presentViewController:vc animated:YES completion:nil];
+
+#if TARGET_OS_IOS
+	GKGameCenterViewController *controller = [[GKGameCenterViewController alloc]
+			initWithLeaderboardID:gck_to_ns(normalized_id)
+			playerScope:GKLeaderboardPlayerScopeGlobal
+			timeScope:GKLeaderboardTimeScopeAllTime];
+	gck_present_panel(this, callback_lifetime.token(), controller, @"leaderboard");
 #else
-	(void)leaderboard_id;
-	NSLog(@"GameCenterKit: show_leaderboard is iOS-only; macOS build is for editor development.");
+	call_deferred("emit_signal", "panel_failed", "leaderboard",
+			"leaderboard panels are available only on iOS");
 #endif
 }
 
 void GameCenterKit::report_achievement(const String &achievement_id, double percent) {
+	const String normalized_id = achievement_id.strip_edges();
+	const CharString utf8_id = normalized_id.utf8();
+	if (!gamecenter::is_valid_identifier(utf8_id.get_data())) {
+		call_deferred("emit_signal", "achievement_reported", false, achievement_id,
+				"achievement_id must not be empty");
+		return;
+	}
+	if (!gamecenter::is_valid_achievement_percent(percent)) {
+		call_deferred("emit_signal", "achievement_reported", false, achievement_id,
+				"percent must be finite and between 0 and 100");
+		return;
+	}
+
 	GameCenterKit *self_ptr = this;
-	String id_copy = achievement_id;
-	GKAchievement *achievement = [[GKAchievement alloc] initWithIdentifier:gck_to_ns(achievement_id)];
+	const gamecenter::CallbackLifetime::Token token = callback_lifetime.token();
+	const String id_copy = achievement_id;
+	GKAchievement *achievement = [[GKAchievement alloc] initWithIdentifier:gck_to_ns(normalized_id)];
 	achievement.percentComplete = percent;
 	achievement.showsCompletionBanner = YES;
 	[GKAchievement reportAchievements:@[ achievement ] withCompletionHandler:^(NSError *error) {
+		if (!gamecenter::CallbackLifetime::is_alive(token)) {
+			return;
+		}
 		self_ptr->call_deferred("emit_signal", "achievement_reported",
 				error == nil, id_copy, gck_error_text(error));
 	}];
@@ -144,16 +287,12 @@ void GameCenterKit::report_achievement(const String &achievement_id, double perc
 
 void GameCenterKit::show_achievements() {
 #if TARGET_OS_IOS
-	GKGameCenterViewController *vc;
-	if (@available(iOS 14.0, *)) {
-		vc = [[GKGameCenterViewController alloc] initWithState:GKGameCenterViewControllerStateAchievements];
-	} else {
-		vc = [[GKGameCenterViewController alloc] init];
-	}
-	vc.gameCenterDelegate = [GCKDismisser shared];
-	[gck_root_controller() presentViewController:vc animated:YES completion:nil];
+	GKGameCenterViewController *controller = [[GKGameCenterViewController alloc]
+			initWithState:GKGameCenterViewControllerStateAchievements];
+	gck_present_panel(this, callback_lifetime.token(), controller, @"achievements");
 #else
-	NSLog(@"GameCenterKit: show_achievements is iOS-only; macOS build is for editor development.");
+	call_deferred("emit_signal", "panel_failed", "achievements",
+			"achievement panels are available only on iOS");
 #endif
 }
 

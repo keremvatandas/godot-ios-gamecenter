@@ -1,5 +1,7 @@
 #pragma once
 
+#include "game_center_contract.h"
+
 #include <godot_cpp/classes/object.hpp>
 #include <godot_cpp/core/class_db.hpp>
 
@@ -12,10 +14,14 @@ namespace godot {
 class GameCenterKit : public Object {
 	GDCLASS(GameCenterKit, Object)
 
+	gamecenter::CallbackLifetime callback_lifetime;
+
 protected:
 	static void _bind_methods();
 
 public:
+	~GameCenterKit();
+
 	void authenticate();
 	bool is_authenticated() const;
 	String player_display_name() const;

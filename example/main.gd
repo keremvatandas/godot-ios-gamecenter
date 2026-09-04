@@ -22,6 +22,10 @@ func _ready() -> void:
 		_say("score_submitted ok=%s board=%s err=%s" % [ok, board, error]))
 	_gc.achievement_reported.connect(func(ok: bool, id: String, error: String) -> void:
 		_say("achievement ok=%s id=%s err=%s" % [ok, id, error]))
+	_gc.panel_closed.connect(func(panel: String) -> void:
+		_say("panel_closed panel=%s" % panel))
+	_gc.panel_failed.connect(func(panel: String, error: String) -> void:
+		_say("panel_failed panel=%s err=%s" % [panel, error]))
 	_button("Authenticate", func() -> void: _gc.authenticate())
 	_button("Submit 1234 to example.board", func() -> void: _gc.submit_score("example.board", 1234))
 	_button("Report example.achievement 100%", func() -> void: _gc.report_achievement("example.achievement", 100.0))
