@@ -45,6 +45,10 @@ class RepositoryContractTests(unittest.TestCase):
         )
         self.assertNotEqual(result.returncode, 0)
 
+    def test_ci_uses_intel_macos_runner_for_x86_64_simulator_gate(self) -> None:
+        workflow = (ROOT / ".github/workflows/build.yml").read_text()
+        self.assertIn("runs-on: macos-15-intel", workflow)
+
 
 if __name__ == "__main__":
     unittest.main()
