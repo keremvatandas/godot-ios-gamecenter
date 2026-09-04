@@ -49,6 +49,21 @@ class RepositoryContractTests(unittest.TestCase):
         workflow = (ROOT / ".github/workflows/build.yml").read_text()
         self.assertIn("runs-on: macos-15-intel", workflow)
 
+    def test_ci_pins_xcode_26_for_apple_builds(self) -> None:
+        workflow = (ROOT / ".github/workflows/build.yml").read_text()
+        self.assertIn(
+            "DEVELOPER_DIR: /Applications/Xcode_26.2.app/Contents/Developer",
+            workflow,
+        )
+
+    def test_ios_export_smoke_preserves_xcodebuild_diagnostics(self) -> None:
+        script = (ROOT / "tools/run_ios_export_smoke.sh").read_text()
+        self.assertNotIn("\n\t-quiet\n", script)
+        self.assertIn("require_file()", script)
+        self.assertIn("require_match()", script)
+        self.assertIn('xcodebuild_log=', script)
+        self.assertIn('cat "$xcodebuild_log" >&2', script)
+
 
 if __name__ == "__main__":
     unittest.main()
