@@ -2,10 +2,13 @@
 
 ## Current status
 
-- Tasks 1-5 are complete: hardened runtime binaries now feed one validated,
+- Tasks 1-6 are complete: hardened runtime binaries now feed one validated,
   installable Core 1.0 add-on ZIP with combined license notices, add-on docs,
   Godot 4.5/4.7 smoke coverage, iOS export checks, and CI release gates.
-- Task 6 is next: prepare public documentation and the Store media kit.
+- Public documentation, Store copy, release notes/checklist, and a verified 1280 x 720
+  trademark-safe Store thumbnail are ready for review.
+- Task 7 is next: run the complete release-candidate verification and stop before any
+  external publication.
 
 ## Decisions
 
@@ -59,6 +62,10 @@
   and the Game Center entitlement. An unsigned x86_64 simulator link passed; the
   explicit architecture works around the official 4.5.2 template's simulator
   archive containing x86_64 objects while advertising arm64 as well.
+- 2026-09-04: the Store media contract first failed because no thumbnail existed,
+  then passed after a generated banner was reviewed and resampled to exactly
+  1280 x 720. Repository documentation, Core 1.0 changelog, Store fields, release
+  notes, and the publication/device checklist were prepared without publishing them.
 
 ## Blockers and open questions
 
@@ -67,5 +74,5 @@
 
 ## Next step
 
-- Execute Task 6 from the implementation plan and prepare Store-ready documentation
-  and trademark-safe media without publishing externally.
+- Execute Task 7 from the implementation plan, record the exact release-candidate
+  results, and hand off the external publication decisions to the maintainer.
