@@ -2,9 +2,8 @@
 
 ## Current status
 
-- Written specification drafted after maintainer approval of the Market-ready Core 1.0
-  direction.
-- Implementation is intentionally not started; awaiting written spec review.
+- Written specification and detailed test-first implementation plan are approved/ready.
+- Implementation is starting with repository hygiene and contract-test scaffolding.
 
 ## Decisions
 
@@ -30,16 +29,16 @@
 - 2026-09-04: independent Codex-Fugu read-only audit completed with `REQUEST CHANGES`.
 - 2026-09-04: spec self-review completed for placeholders, contradictions, scope, and
   ambiguity.
+- 2026-09-04: maintainer approved the written spec and requested implementation/testing,
+  corrected `.gitignore` rules, English Conventional Commits, and no AI labels/trailers.
+- 2026-09-04: detailed implementation plan written and self-reviewed at
+  `docs/superpowers/plans/2026-09-04-gamecenterkit-core-1-0.md`.
 
 ## Blockers and open questions
 
-- Maintainer review of the written specification is required before the detailed
-  implementation plan.
 - Gridlord name usage, repository visibility, public version/tag, release publication,
   and Store submission remain release-stage decisions.
 
 ## Next step
 
-- Obtain written spec approval.
-- Invoke the writing-plans workflow and produce the detailed, test-first implementation
-  plan.
+- Execute Task 1 from the implementation plan with a red/green test cycle.
