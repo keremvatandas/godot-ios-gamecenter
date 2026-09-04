@@ -78,24 +78,31 @@ ROOT = Path(__file__).resolve().parents[1]
 
 class RepositoryContractTests(unittest.TestCase):
     def test_generated_outputs_are_ignored(self) -> None:
-        rules = (ROOT / ".gitignore").read_text(encoding="utf-8").splitlines()
         expected = {
-            "bin/",
-            "build/",
-            "dist/",
+            ".worktrees/probe",
+            "bin/probe.dylib",
+            "build/probe.a",
+            "dist/gamecenter-addon.zip",
             ".godot/",
             "example/.godot/",
-            ".sconsign*.dblite",
+            ".sconsign.dblite",
             "compile_commands.json",
-            "*.o",
-            "*.os",
-            "*.dSYM/",
-            "*.xcarchive/",
-            "*.xcresult/",
-            "*.zip",
+            "src/probe.o",
+            "src/probe.os",
+            "Game.dSYM/Contents/Info.plist",
+            "Game.xcarchive/Info.plist",
+            "Tests.xcresult/Info.plist",
+            "release.zip",
             ".DS_Store",
         }
-        self.assertTrue(expected.issubset(set(rules)))
+        for path in expected:
+            with self.subTest(path=path):
+                result = subprocess.run(
+                    ["git", "check-ignore", "--quiet", path],
+                    cwd=ROOT,
+                    check=False,
+                )
+                self.assertEqual(result.returncode, 0)
 
     def test_godot_uid_files_are_not_ignored(self) -> None:
         result = subprocess.run(
@@ -126,6 +133,7 @@ Use this ordered content:
 
 ```gitignore
 # Native build products
+.worktrees/
 bin/
 build/
 dist/
@@ -333,7 +341,6 @@ git commit -m "test: add Game Center contract coverage"
 
 - Modify: `src/game_center_kit.h`
 - Modify: `src/game_center_kit.mm`
-- Create: `tests/test_native_surface.py`
 - Modify: `example/main.gd`
 - Create: `example/tests/runtime_contract.gd`
 - Modify: `docs/specs/2026-09-04-market-ready-game-center-plugin/status.md`
@@ -343,40 +350,7 @@ git commit -m "test: add Game Center contract coverage"
 - Consumes: Task 2's validation functions and callback token.
 - Produces: existing singleton methods/signals plus `panel_closed(String)` and `panel_failed(String, String)`.
 
-- [ ] **Step 1: Write failing native-surface tests**
-
-Create `tests/test_native_surface.py`:
-
-```python
-from pathlib import Path
-import unittest
-
-
-ROOT = Path(__file__).resolve().parents[1]
-IMPLEMENTATION = ROOT / "src" / "game_center_kit.mm"
-
-
-class NativeSurfaceTests(unittest.TestCase):
-    def test_additive_panel_signals_are_bound(self) -> None:
-        source = IMPLEMENTATION.read_text(encoding="utf-8")
-        self.assertIn('ADD_SIGNAL(MethodInfo("panel_closed"', source)
-        self.assertIn('ADD_SIGNAL(MethodInfo("panel_failed"', source)
-
-    def test_deprecated_application_windows_api_is_absent(self) -> None:
-        source = IMPLEMENTATION.read_text(encoding="utf-8")
-        self.assertNotIn("[UIApplication sharedApplication] windows", source)
-        self.assertIn("connectedScenes", source)
-
-    def test_request_contract_is_used(self) -> None:
-        source = IMPLEMENTATION.read_text(encoding="utf-8")
-        self.assertIn("is_valid_identifier", source)
-        self.assertIn("is_valid_achievement_percent", source)
-        self.assertIn("CallbackLifetime::is_alive", source)
-
-
-if __name__ == "__main__":
-    unittest.main()
-```
+- [ ] **Step 1: Write the failing Godot runtime contract test**
 
 Create `example/tests/runtime_contract.gd` with black-box checks that do not require a Game Center account:
 
@@ -430,15 +404,21 @@ func _finish(errors: Array[String]) -> void:
     quit(0 if errors.is_empty() else 1)
 ```
 
-- [ ] **Step 2: Run tests to verify the red state**
+- [ ] **Step 2: Run the real runtime test to verify the red state**
 
-Run:
+Download official Godot 4.5.2 to a temporary directory, then run:
 
 ```bash
-python3 -m unittest tests.test_native_surface -v
+godot_dir="$(mktemp -d "${TMPDIR:-/tmp}/gamecenter-godot-red.XXXXXX")"
+gh release download 4.5.2-stable --repo godotengine/godot-builds \
+  --pattern 'Godot_v4.5.2-stable_macos.universal.zip' --dir "$godot_dir"
+unzip -q "$godot_dir/Godot_v4.5.2-stable_macos.universal.zip" -d "$godot_dir"
+godot_bin="$(find "$godot_dir" -type f -path '*/Godot.app/Contents/MacOS/Godot' -print -quit)"
+"$godot_bin" --headless --path example --script res://tests/runtime_contract.gd
 ```
 
-Expected: all three tests fail against the current bridge.
+Expected: nonzero exit because the existing singleton has no `panel_failed` signal and
+does not satisfy the invalid-input runtime contract.
 
 - [ ] **Step 3: Add lifecycle state and approved signals to the header/bindings**
 
@@ -553,9 +533,10 @@ Run:
 
 ```bash
 tools/run_cpp_tests.sh
-python3 -m unittest tests.test_native_surface tests.test_repository_contract -v
+python3 -m unittest tests.test_repository_contract -v
 scons platform=macos target=template_debug macos_deployment_target=11.0 -j8
 scons platform=ios target=template_release arch=arm64 ios_min_version=14.0 -j8
+"$godot_bin" --headless --path example --script res://tests/runtime_contract.gd
 git diff --check
 ```
 
@@ -564,7 +545,7 @@ Expected: tests pass and both Apple targets compile without unguarded availabili
 - [ ] **Step 8: Update status and commit**
 
 ```bash
-git add src/game_center_kit.h src/game_center_kit.mm tests/test_native_surface.py example/main.gd example/tests/runtime_contract.gd docs/specs/2026-09-04-market-ready-game-center-plugin/status.md
+git add src/game_center_kit.h src/game_center_kit.mm example/main.gd example/tests/runtime_contract.gd docs/specs/2026-09-04-market-ready-game-center-plugin/status.md
 git commit -m "feat: harden Game Center runtime lifecycle"
 ```
 
@@ -578,7 +559,7 @@ git commit -m "feat: harden Game Center runtime lifecycle"
 - Modify: `tools/build_xcframework.sh`
 - Create: `tools/package_addon.sh`
 - Create: `tools/validate_release.py`
-- Modify: `tests/test_repository_contract.py`
+- Create: `tests/test_package_contract.py`
 - Create: `example/addons/gamecenter/README.md`
 - Modify: `example/addons/gamecenter/plugin.cfg`
 - Modify: `docs/specs/2026-09-04-market-ready-game-center-plugin/status.md`
@@ -588,24 +569,43 @@ git commit -m "feat: harden Game Center runtime lifecycle"
 - Consumes: Task 3 bridge; version `1.0.0`; build outputs under `example/addons/gamecenter/bin`.
 - Produces: `dist/gamecenter-addon.zip` rooted at `addons/gamecenter/` and validated by `python3 tools/validate_release.py`.
 
-- [ ] **Step 1: Extend failing repository/package tests**
+- [ ] **Step 1: Write a failing black-box package test**
 
-Add these checks to `tests/test_repository_contract.py`:
+Create `tests/test_package_contract.py`:
 
 ```python
-    def test_build_script_pins_apple_minimums(self) -> None:
-        script = (ROOT / "tools" / "build_xcframework.sh").read_text(encoding="utf-8")
-        self.assertIn("ios_min_version=14.0", script)
-        self.assertIn("macos_deployment_target=11.0", script)
+from pathlib import Path
+import subprocess
+import unittest
+from zipfile import ZipFile
 
-    def test_addon_contains_self_contained_readme(self) -> None:
-        readme = ROOT / "example" / "addons" / "gamecenter" / "README.md"
-        self.assertTrue(readme.is_file())
-        self.assertIn("GameCenterKit", readme.read_text(encoding="utf-8"))
 
-    def test_plugin_version_is_core_1_0(self) -> None:
-        config = (ROOT / "example" / "addons" / "gamecenter" / "plugin.cfg").read_text(encoding="utf-8")
-        self.assertIn('version="1.0.0"', config)
+ROOT = Path(__file__).resolve().parents[1]
+
+
+class PackageContractTests(unittest.TestCase):
+    def test_packager_produces_installable_core_1_0_zip(self) -> None:
+        result = subprocess.run(
+            ["bash", "tools/package_addon.sh"],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        archive = ROOT / "dist" / "gamecenter-addon.zip"
+        with ZipFile(archive) as package:
+            names = set(package.namelist())
+            self.assertTrue(names)
+            self.assertTrue(all(name.startswith("addons/gamecenter/") for name in names))
+            self.assertIn("addons/gamecenter/README.md", names)
+            self.assertIn("addons/gamecenter/LICENSE", names)
+            plugin_cfg = package.read("addons/gamecenter/plugin.cfg").decode("utf-8")
+            self.assertIn('version="1.0.0"', plugin_cfg)
+
+
+if __name__ == "__main__":
+    unittest.main()
 ```
 
 - [ ] **Step 2: Run tests to verify they fail**
@@ -613,10 +613,10 @@ Add these checks to `tests/test_repository_contract.py`:
 Run:
 
 ```bash
-python3 -m unittest tests.test_repository_contract -v
+python3 -m unittest tests.test_package_contract -v
 ```
 
-Expected: the new minimum-version, add-on README, and version tests fail.
+Expected: the assertion fails because `tools/package_addon.sh` does not exist.
 
 - [ ] **Step 3: Make Apple builds deterministic and warnings strict**
 
@@ -726,7 +726,7 @@ Expected: all tests pass; the ZIP root is `addons/gamecenter`; validator reports
 - [ ] **Step 8: Update status and commit**
 
 ```bash
-git add SConstruct tools/build_xcframework.sh tools/package_addon.sh tools/validate_release.py tests/test_repository_contract.py example/addons/gamecenter/README.md example/addons/gamecenter/plugin.cfg docs/specs/2026-09-04-market-ready-game-center-plugin/status.md
+git add SConstruct tools/build_xcframework.sh tools/package_addon.sh tools/validate_release.py tests/test_package_contract.py example/addons/gamecenter/README.md example/addons/gamecenter/plugin.cfg docs/specs/2026-09-04-market-ready-game-center-plugin/status.md
 git commit -m "build: create reproducible plugin package"
 ```
 
@@ -741,7 +741,6 @@ git commit -m "build: create reproducible plugin package"
 - Modify: `example/project.godot`
 - Create or modify after validating generated format: `example/export_presets.cfg`
 - Modify: `.github/workflows/build.yml`
-- Modify: `tests/test_repository_contract.py`
 - Modify: `docs/specs/2026-09-04-market-ready-game-center-plugin/status.md`
 
 **Interfaces:**
@@ -749,31 +748,7 @@ git commit -m "build: create reproducible plugin package"
 - Consumes: official Godot `4.5.2-stable` and `4.7.2-stable` macOS universal archives; Task 4 ZIP.
 - Produces: repeatable Godot runtime smoke command and CI artifact `gamecenter-addon.zip`.
 
-- [ ] **Step 1: Add failing CI-policy tests**
-
-Add to `tests/test_repository_contract.py`:
-
-```python
-    def test_ci_has_release_permissions_and_smoke_matrix(self) -> None:
-        workflow = (ROOT / ".github" / "workflows" / "build.yml").read_text(encoding="utf-8")
-        self.assertIn("contents: write", workflow)
-        self.assertIn("4.5.2-stable", workflow)
-        self.assertIn("4.7.2-stable", workflow)
-        self.assertIn("tools/run_godot_smoke.sh", workflow)
-        self.assertIn("dist/gamecenter-addon.zip", workflow)
-```
-
-- [ ] **Step 2: Run the CI-policy test to verify it fails**
-
-Run:
-
-```bash
-python3 -m unittest tests.test_repository_contract.RepositoryContractTests.test_ci_has_release_permissions_and_smoke_matrix -v
-```
-
-Expected: failure because the current workflow has none of the required gates.
-
-- [ ] **Step 3: Add pinned Godot downloader and smoke runner**
+- [ ] **Step 1: Add pinned Godot downloader and smoke runner**
 
 Create `tools/download_godot_macos.sh` with arguments `<tag> <destination>` and this URL contract:
 
@@ -798,7 +773,7 @@ godot_bin="$1"
 "$godot_bin" --headless --path example --script res://tests/runtime_contract.gd
 ```
 
-- [ ] **Step 4: Enable the editor plug-in in the example**
+- [ ] **Step 2: Enable the editor plug-in in the example**
 
 Add to `example/project.godot`:
 
@@ -816,7 +791,7 @@ func _supports_platform(platform: EditorExportPlatform) -> bool:
     return platform.get_os_name() == "iOS"
 ```
 
-- [ ] **Step 5: Validate and add an iOS export preset**
+- [ ] **Step 3: Validate and add an iOS export preset**
 
 Use Godot 4.5.2 to create or validate `example/export_presets.cfg` with preset name
 `iOS`, bundle identifier `org.godotengine.gamecenterkit.example`, arm64 enabled, and:
@@ -828,7 +803,7 @@ entitlements/game_center=true
 Never add signing identities or provisioning-profile secrets. Confirm the file parses by
 listing/exporting presets headlessly before committing it.
 
-- [ ] **Step 6: Upgrade CI to build, test, package, smoke, and upload the ZIP**
+- [ ] **Step 4: Upgrade CI to build, test, package, smoke, and upload the ZIP**
 
 Revise `.github/workflows/build.yml` to:
 
@@ -853,7 +828,7 @@ gh release create "${GITHUB_REF_NAME}" dist/gamecenter-addon.zip \
   --notes-file marketing/release-notes.md
 ```
 
-- [ ] **Step 7: Run the full local equivalent**
+- [ ] **Step 5: Validate the workflow and run the full local equivalent**
 
 Run:
 
@@ -867,15 +842,16 @@ godot_45="$(tools/download_godot_macos.sh 4.5.2-stable "$godot_dir/4.5.2")"
 godot_47="$(tools/download_godot_macos.sh 4.7.2-stable "$godot_dir/4.7.2")"
 tools/run_godot_smoke.sh "$godot_45"
 tools/run_godot_smoke.sh "$godot_47"
+actionlint .github/workflows/build.yml
 git diff --check
 ```
 
 Expected: all checks pass. If unsigned iOS export/link cannot run locally because export templates are not installed, install the official matching template packages and rerun; document any remaining signing-only limitation in `status.md`.
 
-- [ ] **Step 8: Update status and commit**
+- [ ] **Step 6: Update status and commit**
 
 ```bash
-git add tools/download_godot_macos.sh tools/run_godot_smoke.sh example/project.godot example/export_presets.cfg .github/workflows/build.yml tests/test_repository_contract.py docs/specs/2026-09-04-market-ready-game-center-plugin/status.md
+git add tools/download_godot_macos.sh tools/run_godot_smoke.sh example/project.godot example/export_presets.cfg .github/workflows/build.yml docs/specs/2026-09-04-market-ready-game-center-plugin/status.md
 git commit -m "ci: verify Godot plugin release artifacts"
 ```
 
@@ -892,7 +868,7 @@ git commit -m "ci: verify Godot plugin release artifacts"
 - Create: `marketing/release-checklist.md`
 - Create: `marketing/media/gamecenterkit-store-thumbnail.png`
 - Create: `marketing/media/README.md`
-- Modify: `tests/test_repository_contract.py`
+- Create: `tests/test_marketing_media.py`
 - Modify: `docs/specs/2026-09-04-market-ready-game-center-plugin/status.md`
 
 **Interfaces:**
@@ -900,25 +876,31 @@ git commit -m "ci: verify Godot plugin release artifacts"
 - Consumes: verified Core 1.0 contract and package details from Tasks 3-5.
 - Produces: reviewable Store fields and a 16:9 PNG; no external publication.
 
-- [ ] **Step 1: Add failing documentation/media tests**
+- [ ] **Step 1: Add a failing media-artifact test**
 
-Add to `tests/test_repository_contract.py`:
+Create `tests/test_marketing_media.py`:
 
 ```python
-    def test_store_material_is_complete(self) -> None:
-        listing = (ROOT / "marketing" / "store-listing.md").read_text(encoding="utf-8")
-        for heading in ("Asset name", "Summary", "Description", "Tags", "AI use disclosure"):
-            self.assertIn(heading, listing)
-        self.assertTrue((ROOT / "CHANGELOG.md").is_file())
+from pathlib import Path
+from struct import unpack
+import unittest
 
-    def test_store_thumbnail_is_16_by_9(self) -> None:
-        from struct import unpack
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+class MarketingMediaTests(unittest.TestCase):
+    def test_store_thumbnail_is_16_by_9_png(self) -> None:
         image = ROOT / "marketing" / "media" / "gamecenterkit-store-thumbnail.png"
         data = image.read_bytes()
         self.assertEqual(data[:8], b"\x89PNG\r\n\x1a\n")
         width, height = unpack(">II", data[16:24])
         self.assertGreaterEqual(width, 1280)
         self.assertEqual(width * 9, height * 16)
+
+
+if __name__ == "__main__":
+    unittest.main()
 ```
 
 - [ ] **Step 2: Run tests to verify the red state**
@@ -926,10 +908,10 @@ Add to `tests/test_repository_contract.py`:
 Run:
 
 ```bash
-python3 -m unittest tests.test_repository_contract -v
+python3 -m unittest tests.test_marketing_media -v
 ```
 
-Expected: missing documentation/media tests fail.
+Expected: failure because the Store thumbnail does not exist.
 
 - [ ] **Step 3: Rewrite repository documentation around verified positioning**
 
@@ -1001,7 +983,7 @@ Expected: all checks pass and the add-on ZIP remains unaffected by repository-on
 - [ ] **Step 7: Update status and commit**
 
 ```bash
-git add README.md CHANGELOG.md marketing tests/test_repository_contract.py docs/specs/2026-09-04-market-ready-game-center-plugin/status.md
+git add README.md CHANGELOG.md marketing tests/test_marketing_media.py docs/specs/2026-09-04-market-ready-game-center-plugin/status.md
 git commit -m "docs: prepare GameCenterKit 1.0 release"
 ```
 
