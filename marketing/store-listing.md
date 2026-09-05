@@ -1,6 +1,7 @@
 # Godot Asset Store Listing
 
-Submitted for moderation on 2026-09-05; status **Pending**.
+Resubmitted for moderation on 2026-09-05 with **1.0.1**; status **Pending**.
+The maintainer confirmed live-app testing of the current GridLord addon.
 https://store.godotengine.org/asset/keremvatandas/gamecenterkit/
 
 ## Asset name
@@ -41,7 +42,7 @@ games, friends, challenges, matchmaking, multiplayer, or turn-based matches.
 
 | Field | Value |
 | --- | --- |
-| Version | `1.0.0` |
+| Version | `1.0.1` |
 | Minimum Godot | `4.5` |
 | Maximum Godot | `4.7.x` |
 | License | `MIT` |
@@ -66,7 +67,11 @@ CI, documentation, and promotional-image generation.
 
 - Type: Addon
 - Price: Free
-- Release: https://github.com/keremvatandas/godot-ios-gamecenter/releases/tag/v1.0.0
-- Upload: the verified CI `gamecenter-addon.zip`; do not use GitHub source archives.
+- Current Store upload: `dist/release-1.0.1/gamecenter-addon.zip` (25,846,245 bytes).
+- SHA-256: `b27db4e3192d6fa07ec33b6af8d109d6ee4dab5a0b4b0895d23dd5f26e50b92f`.
+- Native source: `e2e479863120729893ecd9e35952bb7959362c17`; exact GridLord
+  provenance-verified files, with only plugin.cfg version metadata changed.
+- Previous GitHub release: https://github.com/keremvatandas/godot-ios-gamecenter/releases/tag/v1.0.0
+- See `docs/specs/2026-09-05-store-1-0-1/provenance.json` for package hashes.
 - Thumbnail: `marketing/media/gamecenterkit-store-thumbnail.jpg`, a 194,740-byte
   1280 x 720 conversion of the original PNG for the Store's 600 KB limit.

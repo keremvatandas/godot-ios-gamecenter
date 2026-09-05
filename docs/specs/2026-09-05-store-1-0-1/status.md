@@ -29,3 +29,14 @@ Rollback: retain the old public 1.0.0 release. Store submission can return to Dr
 - Upload ZIP: 25,846,245 bytes; SHA-256
   `b27db4e3192d6fa07ec33b6af8d109d6ee4dab5a0b4b0895d23dd5f26e50b92f`.
 - Store upload form prepared; submission pending.
+
+- PASS: Store saved stable 1.0.1, 25.85 MB, Godot 4.5–4.7.x; version status
+  Pending Approval. Original 1.0.0 remains as historical version.
+- PASS: clicked Publish (submit for review); UI shows Asset Status: Pending and
+  Revert to Draft (cancel review request). Moderator approval remains pending.
+- Initial upload rejected an expired CSRF token; reloaded the form, re-entered
+  the reviewed fields and uploaded successfully. No duplicate 1.0.1 created.
+- Source/metadata commit b66f549 is verified on remote main. CI run 33979592991
+  started; its remote rebuild is still running. The uploaded ZIP passed the local
+  checks above and uses the exact user-tested native files, not rebuilt binaries.
+- No new task worktree or branch was created; existing unrelated work is preserved.
