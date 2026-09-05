@@ -1,4 +1,7 @@
-# Godot Asset Store Listing Draft
+# Godot Asset Store Listing
+
+Submitted for moderation on 2026-09-05; status **Pending**.
+https://store.godotengine.org/asset/keremvatandas/gamecenterkit/
 
 ## Asset name
 
@@ -40,7 +43,7 @@ games, friends, challenges, matchmaking, multiplayer, or turn-based matches.
 | --- | --- |
 | Version | `1.0.0` |
 | Minimum Godot | `4.5` |
-| Maximum Godot | `4.7` |
+| Maximum Godot | `4.7.x` |
 | License | `MIT` |
 | Runtime | iOS/iPadOS 14+ |
 | Editor support | macOS 11+ |
@@ -56,9 +59,8 @@ games, friends, challenges, matchmaking, multiplayer, or turn-based matches.
 
 ## AI use disclosure — Store-required field
 
-Codex assisted code review, test and CI design, documentation, and marketing-image
-generation. The maintainer reviewed the resulting changes and validated GameKit
-behavior.
+AI assistance (Codex) was used for implementation, code review, automated tests,
+CI, documentation, and promotional-image generation.
 
 ## Distribution
 
@@ -66,3 +68,5 @@ behavior.
 - Price: Free
 - Release: https://github.com/keremvatandas/godot-ios-gamecenter/releases/tag/v1.0.0
 - Upload: the verified CI `gamecenter-addon.zip`; do not use GitHub source archives.
+- Thumbnail: `marketing/media/gamecenterkit-store-thumbnail.jpg`, a 194,740-byte
+  1280 x 720 conversion of the original PNG for the Store's 600 KB limit.

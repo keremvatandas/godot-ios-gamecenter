@@ -118,3 +118,27 @@
   URLs in the Store listing now reflect the existing public repository.
 - GitHub publication is complete. Store submission is pending only the maintainer's
   account login; no Store asset has been created or submitted yet.
+
+### Store submission resumed
+
+- Maintainer logged in. Asset creation form is filled with publisher Kerem Vatandas
+  (`keremvatandas`), asset GameCenterKit for Godot (`gamecenterkit`).
+- The form requires explicit agreement to the Store Terms of Service before its
+  metadata/version/media pages become available. Requested the required at-action
+  confirmation; the checkbox remains unchecked until the maintainer answers.
+- Rechecked the release ZIP SHA-256 and the 1280 x 720 thumbnail. AI disclosure
+  describes implementation, review, tests, CI, documentation, and promotional art
+  assistance without claiming an unobserved live GameKit device result.
+- Maintainer explicitly approved Terms acceptance ("onayliyorum"). Accepted the
+  terms and created the asset at
+  https://store.godotengine.org/asset/keremvatandas/gamecenterkit/.
+- Saved the description, MIT license, source link, five tags, and AI disclosure.
+  Converted the existing 1280 x 720 PNG to JPEG (194,740 bytes) to meet the Store's
+  600 KB image limit, and saved it as the thumbnail. Original artwork is retained.
+- Uploaded the exact verified release ZIP as stable version `1.0.0`, minimum
+  Godot `4.5`, maximum `4.7.x`. Store shows 28.38 MB and version Pending Approval.
+- Reviewed the rendered description, code example, links, license, AI notice,
+  and thumbnail. All required publication fields were marked complete.
+- Submitted the asset for moderator review. Dashboard now explicitly reports
+  **Asset Status: Pending** and says the page becomes public after team review.
+  Store submission is complete; moderator approval remains external and pending.

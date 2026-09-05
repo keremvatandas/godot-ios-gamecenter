@@ -7,7 +7,7 @@
 - [x] Set the GitHub description and topics.
 - [x] Confirm the Store source and support URLs resolve publicly.
 - [x] Review Store name, summary, description, tags, compatibility, and MIT license.
-- [ ] Include the required AI use disclosure in the Store field.
+- [x] Include the required AI use disclosure in the Store field.
 
 ## Release candidate
 
@@ -21,11 +21,13 @@
 
 ## Physical-device sandbox test
 
-Maintainer confirmed the device-test question on 2026-09-05. Individual steps below
-remain a manual checklist; no per-step execution evidence was captured by CI.
+The exact public release was installed in GridLord on 2026-09-05. Its isolated
+quick verification suite, signed iOS archive/export, and device installation passed.
+Device launch was blocked by the locked iPhone; live GameKit operations below remain
+unverified. See GridLord's `docs/specs/2026-09-05-gamecenter-release-device-test/status.md`.
 
-- [ ] Install the release-candidate ZIP into Gridlord or the example project.
-- [ ] Confirm the exported app contains the Game Center entitlement.
+- [x] Install the release-candidate ZIP into Gridlord or the example project.
+- [x] Confirm the exported app contains the Game Center entitlement.
 - [ ] Authenticate a sandbox Game Center account.
 - [ ] Submit and observe a leaderboard score.
 - [ ] Report and observe achievement progress.
@@ -36,8 +38,14 @@ remain a manual checklist; no per-step execution evidence was captured by CI.
 
 ## Godot Asset Store
 
-- [ ] Upload the exact verified release ZIP.
-- [ ] Upload `marketing/media/gamecenterkit-store-thumbnail.png`.
-- [ ] Enter the reviewed Store fields and required disclosure.
-- [ ] Preview the listing and confirm thumbnail cropping and text readability.
-- [ ] Submit only after final maintainer approval.
+- [x] Upload the exact verified release ZIP.
+- [x] Upload `marketing/media/gamecenterkit-store-thumbnail.jpg` (1280 x 720,
+  194,740 bytes; converted from the original PNG for the Store's 600 KB limit).
+- [x] Enter the reviewed Store fields and required disclosure.
+- [x] Preview the listing and confirm thumbnail cropping and text readability.
+- [x] Submit after maintainer publication approval and explicit Terms acceptance.
+- [ ] Receive moderator approval; listing is currently **Pending**, not public.
+
+Submitted on 2026-09-05:
+https://store.godotengine.org/asset/keremvatandas/gamecenterkit/
+Version `1.0.0`, stable, Godot `4.5` through `4.7.x`, MIT, free.
