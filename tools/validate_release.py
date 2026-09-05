@@ -12,7 +12,7 @@ from zipfile import ZipFile
 
 
 ADDON_ROOT = "addons/gamecenter/"
-EXPECTED_VERSION = "1.0.0"
+EXPECTED_VERSION = "1.0.1"
 
 
 class ValidationError(RuntimeError):
@@ -152,7 +152,7 @@ def validate(archive: Path) -> None:
             inspect_macos_binary(addon / "bin/libgamecenter.macos.template_release.universal.dylib")
 
     print(
-        "validated GameCenterKit 1.0.0: iOS 14 arm64 device, "
+        "validated GameCenterKit 1.0.1: iOS 14 arm64 device, "
         "arm64/x86_64 simulator, macOS 11 arm64/x86_64"
     )
 

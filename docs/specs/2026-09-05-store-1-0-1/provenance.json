@@ -1,0 +1,108 @@
+{
+  "source_commit": "e2e479863120729893ecd9e35952bb7959362c17",
+  "version": "1.0.1",
+  "archive_sha256": "b27db4e3192d6fa07ec33b6af8d109d6ee4dab5a0b4b0895d23dd5f26e50b92f",
+  "changes_from_device_test": [
+    "plugin.cfg version 1.0.0 -> 1.0.1"
+  ],
+  "input_file_hashes": {
+    "LICENSE": {
+      "sha256": "9e6ea02c928357cc156467650ab293bf4636884d0e25735afa3b87078bc45b9d",
+      "size": 2256
+    },
+    "README.md": {
+      "sha256": "522a045a2e5b152ca7836bc63d189f0e5d994d07c7c780e688896cf118d84edb",
+      "size": 4849
+    },
+    "bin/libgamecenter.ios.xcframework/Info.plist": {
+      "sha256": "d7c8203fbda09cfe55ab9b80814a661ccf1cca66edd1d8d8f6c8da522e9184fd",
+      "size": 1296
+    },
+    "bin/libgamecenter.ios.xcframework/ios-arm64/libgamecenter.ios.template_release.arm64.a": {
+      "sha256": "70782d14edbae42e3acfba6bd03a4ba30581317dad96a8804ffe67946dd0272b",
+      "size": 42716192
+    },
+    "bin/libgamecenter.ios.xcframework/ios-arm64_x86_64-simulator/libgamecenter.ios.template_release.universal.simulator.a": {
+      "sha256": "cb07c2a04c96117b266fe55e11d171358ff3a7a01accecd42227a68d6b64e387",
+      "size": 87234056
+    },
+    "bin/libgamecenter.macos.template_debug.universal.dylib": {
+      "sha256": "47022db9d39e250eea44e513e5e921bbfaf53690f2fc7d854c1cf87610121986",
+      "size": 432832
+    },
+    "bin/libgamecenter.macos.template_release.universal.dylib": {
+      "sha256": "aa471d05160414bbddc0eb785ddad5f3e9f3620e1f059cbc05d3e4bacf001bcc",
+      "size": 432504
+    },
+    "gamecenter.gdextension": {
+      "sha256": "9837391c70694a1479794a07fa068ecea099e1a76e4d789c52a781ebf8e49314",
+      "size": 440
+    },
+    "gamecenter.gdextension.uid": {
+      "sha256": "867bffa10fbd2a33ad848dc06dfd95df294b2e9ce0e9430d99d52b123b88e3b5",
+      "size": 20
+    },
+    "plugin.cfg": {
+      "sha256": "9bf2a42d9c60ef3f422abb2291de97426d3c901c4643e81d52114384beb98f74",
+      "size": 184
+    },
+    "plugin.gd": {
+      "sha256": "b6f5aad82c82f0367fd4b98dd3de1e8ab51688d58f848aa0f14925c0539e4a56",
+      "size": 724
+    },
+    "plugin.gd.uid": {
+      "sha256": "8535363923975ddf6075059521e2d8a89d69523edc4d82f8e9475dff9e91c5de",
+      "size": 20
+    }
+  },
+  "packaged_files": {
+    "addons/gamecenter/LICENSE": {
+      "sha256": "9e6ea02c928357cc156467650ab293bf4636884d0e25735afa3b87078bc45b9d",
+      "size": 2256
+    },
+    "addons/gamecenter/README.md": {
+      "sha256": "522a045a2e5b152ca7836bc63d189f0e5d994d07c7c780e688896cf118d84edb",
+      "size": 4849
+    },
+    "addons/gamecenter/bin/libgamecenter.ios.xcframework/Info.plist": {
+      "sha256": "d7c8203fbda09cfe55ab9b80814a661ccf1cca66edd1d8d8f6c8da522e9184fd",
+      "size": 1296
+    },
+    "addons/gamecenter/bin/libgamecenter.ios.xcframework/ios-arm64/libgamecenter.ios.template_release.arm64.a": {
+      "sha256": "70782d14edbae42e3acfba6bd03a4ba30581317dad96a8804ffe67946dd0272b",
+      "size": 42716192
+    },
+    "addons/gamecenter/bin/libgamecenter.ios.xcframework/ios-arm64_x86_64-simulator/libgamecenter.ios.template_release.universal.simulator.a": {
+      "sha256": "cb07c2a04c96117b266fe55e11d171358ff3a7a01accecd42227a68d6b64e387",
+      "size": 87234056
+    },
+    "addons/gamecenter/bin/libgamecenter.macos.template_debug.universal.dylib": {
+      "sha256": "47022db9d39e250eea44e513e5e921bbfaf53690f2fc7d854c1cf87610121986",
+      "size": 432832
+    },
+    "addons/gamecenter/bin/libgamecenter.macos.template_release.universal.dylib": {
+      "sha256": "aa471d05160414bbddc0eb785ddad5f3e9f3620e1f059cbc05d3e4bacf001bcc",
+      "size": 432504
+    },
+    "addons/gamecenter/gamecenter.gdextension": {
+      "sha256": "9837391c70694a1479794a07fa068ecea099e1a76e4d789c52a781ebf8e49314",
+      "size": 440
+    },
+    "addons/gamecenter/gamecenter.gdextension.uid": {
+      "sha256": "867bffa10fbd2a33ad848dc06dfd95df294b2e9ce0e9430d99d52b123b88e3b5",
+      "size": 20
+    },
+    "addons/gamecenter/plugin.cfg": {
+      "sha256": "1da371e3e06151e07787c33acd52194e39f889de7fb52105db923c4d3682829e",
+      "size": 184
+    },
+    "addons/gamecenter/plugin.gd": {
+      "sha256": "b6f5aad82c82f0367fd4b98dd3de1e8ab51688d58f848aa0f14925c0539e4a56",
+      "size": 724
+    },
+    "addons/gamecenter/plugin.gd.uid": {
+      "sha256": "8535363923975ddf6075059521e2d8a89d69523edc4d82f8e9475dff9e91c5de",
+      "size": 20
+    }
+  }
+}

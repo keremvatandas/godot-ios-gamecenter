@@ -25,7 +25,7 @@ class PackageContractTests(unittest.TestCase):
             self.assertIn("addons/gamecenter/README.md", names)
             self.assertIn("addons/gamecenter/LICENSE", names)
             plugin_cfg = package.read("addons/gamecenter/plugin.cfg").decode("utf-8")
-            self.assertIn('version="1.0.0"', plugin_cfg)
+            self.assertIn('version="1.0.1"', plugin_cfg)
 
 
 if __name__ == "__main__":

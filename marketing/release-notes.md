@@ -1,20 +1,17 @@
-# GameCenterKit 1.0.0
+# GameCenterKit 1.0.1
 
-GameCenterKit 1.0 is a focused Game Center bridge for official single-precision Godot
-4.5 through 4.7 builds.
+- Validate leaderboard and achievement metadata before presenting native panels.
+- Report unavailable metadata and presentation timeouts through failure signals.
+- Prevent overlapping native panel requests and safely own queued callback state.
+- Keep the existing public API and Apple platform support.
 
-Highlights:
+The shipped native binaries are byte-identical to GridLord's provenance-verified
+addon from source e2e4798. The maintainer confirmed successful live-app testing.
+Only the package version metadata changes from that tested addon.
 
-- Installable `addons/gamecenter/` package with prebuilt iOS device/simulator and
-  universal macOS binaries.
-- Authentication, leaderboard score submission, achievement progress, native iOS
-  panels, and Game Center access point visibility.
-- Signal-driven asynchronous results on Godot's main loop.
-- Scene-aware iOS presentation, deterministic input validation, panel lifecycle
-  signals, and shutdown-safe native callbacks.
-- Verified iOS 14/macOS 11 deployment targets, package contents, symbols,
-  architectures, Godot 4.5.2/4.7.2 loading, and iOS Xcode export/link behavior.
+Supports official single-precision Godot 4.5–4.7, iOS/iPadOS 14+, and macOS 11+
+editor use. Native Game Center panels are iOS-only.
 
-Install by extracting `gamecenter-addon.zip` into the root of a Godot project, enabling
-**Game Center Export**, and enabling the Game Center entitlement in the iOS export
-preset. See the bundled README for Apple Developer and App Store Connect setup.
+Extract `gamecenter-addon.zip` into the Godot project root, enable **Game Center
+Export**, and enable the Game Center entitlement in the iOS export preset.
+See the bundled README for Apple Developer and App Store Connect setup.
