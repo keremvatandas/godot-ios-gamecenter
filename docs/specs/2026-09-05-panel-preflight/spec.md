@@ -3,8 +3,10 @@
 ## Evidence
 GridLord on iPhone 11, iOS 26.4.2, authenticates successfully. A real leaderboard
 tap reaches GKGameCenterViewController construction and presentation on the main
-thread through the correct active key window, but creates an empty navigation
-controller which blocks game interaction. Read-only GameKit metadata calls return
+thread through the correct active key window. Its navigation stack is empty and
+the overlay is absent in iPhone Mirroring. Later direct-device user confirmation
+shows that the leaderboard does open on the physical phone; the mirrored image
+and empty navigation stack are not proof of failed native presentation. Read-only GameKit metadata calls return
 zero leaderboards and achievement descriptions without NSError. App Store Connect
 also contains no definitions. A main leaderboard draft was added for diagnosis;
 no release submitted and no scores or achievements fabricated.

@@ -50,3 +50,25 @@
 - Candidate source is being committed on the feature branch so GridLord can
   provenance-lock its tested binaries. Main merge remains pending device closure.
 - Separate macOS shutdown investigation is untouched.
+
+## Final device evidence — 2026-09-05
+
+- Native code e2e4798 is in GridLord's provenance-checked addon and signed iPhone
+  candidate3. GridLord final gate passed129/129 E2E,31 panel/input checks,254 script
+  parses,46 layouts with zero overflow,19 overlays and all other required checks.
+  Firebase live social explicitly skipped without emulator;16 standard checks pass.
+- Missing achievement definitions fail gracefully on the actual iPhone twice;
+  the game remains navigable back to the main menu.
+- A diagnostic UIKit alert from the same window rendered and closed in Mirroring.
+  Apple's Games app profile also rendered. Access-point active/visible flags were
+  true, but its dashboard was absent from the mirrored image. No migration made.
+- Crucial correction: the user confirmed that the leaderboard opens on the
+  physical phone ("telefonda aciliyor"). An empty legacy navigation stack and
+  absent mirrored image do not establish failed Game Center presentation on
+  iOS26. The mirrored overlay observation must not be reported as a plugin defect.
+  Direct-device close/reopen/navigation confirmation remains pending.
+- No synthetic score/achievement writes, player reset, App Store review, upload
+  or publication. The separate macOS shutdown investigation remains untouched.
+- Binary provenance cross-check: all1023 arm64 object payloads match byte-for-byte
+  between GridLord's e2e4798 vendor archive and the candidate3 Xcode link input.
+  Archive-container metadata differs; compiled object code does not.
