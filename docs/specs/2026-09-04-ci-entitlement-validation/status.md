@@ -40,5 +40,5 @@
 - 2026-09-05: confirmed failed hosted run 33915527026 used old commit 6102a8b,
   without this fix. All nine Python tests, C++ tests, actionlint, shell syntax,
   and diff checks passed again before committing the patch.
-- Submitting the validated patch to main for a new GitHub Actions run.
-  Hosted validation of the corrected commit is still pending.
+- Hosted run 33920836650 passed on corrected commit 2d2e8dd, including real
+  iOS exports and simulator link. The workflow fix is verified on GitHub Actions.

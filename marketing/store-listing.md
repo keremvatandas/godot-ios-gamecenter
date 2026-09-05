@@ -51,10 +51,8 @@ games, friends, challenges, matchmaking, multiplayer, or turn-based matches.
 
 ## Links
 
-- Source: `https://github.com/keremvatandas/godot-ios-gamecenter` — pending repository
-  publication.
-- Support: `https://github.com/keremvatandas/godot-ios-gamecenter/issues` — pending
-  repository publication.
+- Source: `https://github.com/keremvatandas/godot-ios-gamecenter`.
+- Support: `https://github.com/keremvatandas/godot-ios-gamecenter/issues`.
 
 ## AI use disclosure — Store-required field
 
@@ -62,6 +60,9 @@ Codex assisted code review, test and CI design, documentation, and marketing-ima
 generation. The maintainer reviewed the resulting changes and validated GameKit
 behavior.
 
-## Optional proof line — exclude until explicitly approved
+## Distribution
 
-[GameCenterKit has been exercised in Gridlord during development.]
+- Type: Addon
+- Price: Free
+- Release: https://github.com/keremvatandas/godot-ios-gamecenter/releases/tag/v1.0.0
+- Upload: the verified CI `gamecenter-addon.zip`; do not use GitHub source archives.

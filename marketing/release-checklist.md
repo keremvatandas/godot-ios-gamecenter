@@ -2,24 +2,27 @@
 
 ## Repository and metadata
 
-- [ ] Approve or remove the optional public Gridlord proof line.
-- [ ] Make the GitHub repository public.
-- [ ] Set the GitHub description and topics.
-- [ ] Confirm the Store source and support URLs resolve publicly.
-- [ ] Review Store name, summary, description, tags, compatibility, and MIT license.
+- [x] Omit the optional public Gridlord proof line from Store copy.
+- [x] Make the GitHub repository public.
+- [x] Set the GitHub description and topics.
+- [x] Confirm the Store source and support URLs resolve publicly.
+- [x] Review Store name, summary, description, tags, compatibility, and MIT license.
 - [ ] Include the required AI use disclosure in the Store field.
 
 ## Release candidate
 
-- [ ] Pull the approved release branch and initialize submodules.
-- [ ] Run native, Python, build, package, Godot 4.5/4.7, and iOS export/link gates.
-- [ ] Confirm `gamecenter-addon.zip` contains only the `addons/gamecenter/` root.
-- [ ] Record and independently verify the SHA-256 checksum.
-- [ ] Confirm `v1.0.0` matches `plugin.cfg` version `1.0.0`.
-- [ ] Push the approved commits and signed or annotated `v1.0.0` tag.
-- [ ] Review the automatically created draft GitHub release and attached ZIP.
+- [x] Select the successful CI artifact from tested commit `2d2e8dd`.
+- [x] Run native, Python, build, package, Godot 4.5/4.7, and iOS export/link gates.
+- [x] Confirm `gamecenter-addon.zip` contains only the `addons/gamecenter/` root.
+- [x] Record and independently verify the SHA-256 checksum.
+- [x] Confirm `v1.0.0` matches `plugin.cfg` version `1.0.0`.
+- [x] Publish `v1.0.0` at tested commit `2d2e8dd` via the GitHub release API.
+- [x] Review and publish the GitHub release with the exact CI ZIP and SHA256SUMS.
 
 ## Physical-device sandbox test
+
+Maintainer confirmed the device-test question on 2026-09-05. Individual steps below
+remain a manual checklist; no per-step execution evidence was captured by CI.
 
 - [ ] Install the release-candidate ZIP into Gridlord or the example project.
 - [ ] Confirm the exported app contains the Game Center entitlement.

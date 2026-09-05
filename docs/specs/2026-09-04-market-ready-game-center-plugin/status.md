@@ -92,3 +92,29 @@
 
 - Run the physical-device checklist in Gridlord or the example app, review the Store
   draft, then explicitly approve whichever external publication actions should proceed.
+
+
+## Publication: 2026-09-05
+
+- Maintainer confirmed the preceding device-test question and requested the necessary
+  GitHub release and Godot Asset Store publication steps. This supersedes the earlier
+  pending publication decision. Device confirmation is maintainer-reported.
+- Plan: independently validate the successful CI archive; publish v1.0.0 pointing at
+  that exact tested commit; verify the public download; submit the same ZIP to Store.
+- Successful run: 33920836650, commit 2d2e8dd683f143f15fc0452f4e2a4564575b1c28.
+- CI archive downloaded to dist/release-1.0.0/gamecenter-addon.zip and independently
+  validated with tools/validate_release.py. Package SHA-256:
+  d16bbdc7e78bb651c01e90ca45968e84de660187d2da2f76648bd963cc1a9e83.
+- Repository is already public. Store login is required; sign-in page opened and
+  maintainer asked to log in while GitHub publication proceeds.
+- Keep the optional public Gridlord proof line omitted from the listing. Publish
+  the prepared technical description, MIT license, and factual AI disclosure.
+
+- Published https://github.com/keremvatandas/godot-ios-gamecenter/releases/tag/v1.0.0
+  with the verified CI ZIP and SHA256SUMS. GitHub created the tag at the exact
+  tested commit through the release API; no redundant tag build was started.
+- Public unauthenticated ZIP download is byte-identical to the validated CI archive.
+- Repository description and Godot/iOS/GameKit topics are configured. Source/support
+  URLs in the Store listing now reflect the existing public repository.
+- GitHub publication is complete. Store submission is pending only the maintainer's
+  account login; no Store asset has been created or submitted yet.
