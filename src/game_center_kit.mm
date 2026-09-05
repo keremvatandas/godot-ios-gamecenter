@@ -51,14 +51,21 @@ static char gck_panel_delegate_key;
 @end
 
 static UIViewController *gck_top_controller(UIViewController *controller) {
+	// Game Center is itself a navigation controller. Keep its identity for
+	// the duplicate-panel guard, even when GameKit has not populated its stack.
+	if ([controller isKindOfClass:[GKGameCenterViewController class]]) {
+		return controller;
+	}
 	if (controller.presentedViewController && !controller.presentedViewController.isBeingDismissed) {
 		return gck_top_controller(controller.presentedViewController);
 	}
 	if ([controller isKindOfClass:[UINavigationController class]]) {
-		return gck_top_controller(((UINavigationController *)controller).visibleViewController);
+		UIViewController *child = ((UINavigationController *)controller).visibleViewController;
+		return child == nil ? controller : gck_top_controller(child);
 	}
 	if ([controller isKindOfClass:[UITabBarController class]]) {
-		return gck_top_controller(((UITabBarController *)controller).selectedViewController);
+		UIViewController *child = ((UITabBarController *)controller).selectedViewController;
+		return child == nil ? controller : gck_top_controller(child);
 	}
 	return controller;
 }
@@ -124,6 +131,59 @@ static void gck_present_panel(
 	objc_setAssociatedObject(
 			controller, &gck_panel_delegate_key, delegate, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 	[presenter presentViewController:controller animated:YES completion:nil];
+}
+
+// GameKit can return an empty metadata array without NSError for an identifier
+// absent from App Store Connect. Presenting anyway can leave an invisible modal.
+static void gck_load_and_present_panel(
+		GameCenterKit *owner,
+		gamecenter::CallbackLifetime::Token lifetime,
+		std::shared_ptr<gamecenter::PanelRequestGate> requests,
+		NSString *panel,
+		void (^load_metadata)(void (^completion)(BOOL, NSError *)),
+		GKGameCenterViewController *(^make_controller)(void)) {
+	// Blocks capture C++ reference parameters as references. Own these values
+	// before enqueueing so a temporary token cannot dangle after this returns.
+	const auto ticket = requests->begin();
+	if (ticket == 0) {
+		gck_emit_panel_failed(owner, [panel UTF8String], "a Game Center panel request is already pending");
+		return;
+	}
+	dispatch_async(dispatch_get_main_queue(), ^{
+		if (!gamecenter::CallbackLifetime::is_alive(lifetime)) {
+			return;
+		}
+		if (![GKLocalPlayer localPlayer].isAuthenticated) {
+			requests->finish(ticket);
+			gck_emit_panel_failed(owner, [panel UTF8String], "Game Center player is not authenticated");
+			return;
+		}
+		dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 15 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+			if (gamecenter::CallbackLifetime::is_alive(lifetime) && requests->finish(ticket)) {
+				gck_emit_panel_failed(owner, [panel UTF8String], "Game Center metadata request timed out; try again");
+			}
+		});
+		load_metadata(^(BOOL available, NSError *error) {
+			dispatch_async(dispatch_get_main_queue(), ^{
+				if (!gamecenter::CallbackLifetime::is_alive(lifetime) || !requests->finish(ticket)) {
+					return;
+				}
+				if (error != nil) {
+					gck_emit_panel_failed(owner, [panel UTF8String], [error.localizedDescription UTF8String]);
+					return;
+				}
+				if (!available) {
+					gck_emit_panel_failed(owner, [panel UTF8String], "Game Center metadata is unavailable; check App Store Connect configuration");
+					return;
+				}
+				if (![GKLocalPlayer localPlayer].isAuthenticated) {
+					gck_emit_panel_failed(owner, [panel UTF8String], "Game Center player is not authenticated");
+					return;
+				}
+				gck_present_panel(owner, lifetime, make_controller(), panel);
+			});
+		});
+	});
 }
 #endif
 
@@ -245,11 +305,26 @@ void GameCenterKit::show_leaderboard(const String &leaderboard_id) {
 	}
 
 #if TARGET_OS_IOS
-	GKGameCenterViewController *controller = [[GKGameCenterViewController alloc]
-			initWithLeaderboardID:gck_to_ns(normalized_id)
-			playerScope:GKLeaderboardPlayerScopeGlobal
-			timeScope:GKLeaderboardTimeScopeAllTime];
-	gck_present_panel(this, callback_lifetime.token(), controller, @"leaderboard");
+	NSString *identifier = gck_to_ns(normalized_id);
+	gck_load_and_present_panel(this, callback_lifetime.token(), panel_requests, @"leaderboard",
+			^(void (^completion)(BOOL, NSError *)) {
+		[GKLeaderboard loadLeaderboardsWithIDs:@[identifier] completionHandler:^(NSArray<GKLeaderboard *> *boards, NSError *error) {
+			BOOL found = NO;
+			for (GKLeaderboard *board in boards) {
+				if ([board.baseLeaderboardID isEqualToString:identifier]) {
+					found = YES;
+					if (@available(iOS 26.0, *)) {
+						found = !board.isHidden;
+					}
+					break;
+				}
+			}
+			completion(found, error);
+		}];
+	}, ^GKGameCenterViewController *{
+		return [[GKGameCenterViewController alloc] initWithLeaderboardID:identifier
+				playerScope:GKLeaderboardPlayerScopeGlobal timeScope:GKLeaderboardTimeScopeAllTime];
+	});
 #else
 	call_deferred("emit_signal", "panel_failed", "leaderboard",
 			"leaderboard panels are available only on iOS");
@@ -287,9 +362,14 @@ void GameCenterKit::report_achievement(const String &achievement_id, double perc
 
 void GameCenterKit::show_achievements() {
 #if TARGET_OS_IOS
-	GKGameCenterViewController *controller = [[GKGameCenterViewController alloc]
-			initWithState:GKGameCenterViewControllerStateAchievements];
-	gck_present_panel(this, callback_lifetime.token(), controller, @"achievements");
+	gck_load_and_present_panel(this, callback_lifetime.token(), panel_requests, @"achievements",
+			^(void (^completion)(BOOL, NSError *)) {
+		[GKAchievementDescription loadAchievementDescriptionsWithCompletionHandler:^(NSArray<GKAchievementDescription *> *descriptions, NSError *error) {
+			completion(descriptions.count > 0, error);
+		}];
+	}, ^GKGameCenterViewController *{
+		return [[GKGameCenterViewController alloc] initWithState:GKGameCenterViewControllerStateAchievements];
+	});
 #else
 	call_deferred("emit_signal", "panel_failed", "achievements",
 			"achievement panels are available only on iOS");

@@ -15,6 +15,8 @@ class GameCenterKit : public Object {
 	GDCLASS(GameCenterKit, Object)
 
 	gamecenter::CallbackLifetime callback_lifetime;
+	std::shared_ptr<gamecenter::PanelRequestGate> panel_requests =
+			std::make_shared<gamecenter::PanelRequestGate>();
 
 protected:
 	static void _bind_methods();

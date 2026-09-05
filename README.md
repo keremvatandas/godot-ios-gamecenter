@@ -129,7 +129,11 @@ with Godot 4.5.2 and 4.7.2 and generates debug/release iOS projects.
 - **A score or achievement fails:** compare the identifier exactly with App Store
   Connect and log the emitted error string.
 - **A panel emits `panel_failed`:** avoid presenting over another Game Center panel and
-  wait until the application has an active scene. Panels are not available on macOS.
+  wait until the application has an active scene. Panels first load their GameKit
+  metadata; missing App Store Connect definitions, API errors, authentication loss
+  and a 15-second metadata timeout emit a failure without presenting a modal.
+  A pending request blocks additional panel requests; retry after its result.
+  Connect `panel_failed` to visible feedback in your game. Panels are not available on macOS.
 - **The iOS export cannot link the bridge:** re-enable **Game Center Export**, rebuild
   from source if using a custom binary, and confirm the exported project contains
   `libgamecenter.ios.xcframework` and GameKit.

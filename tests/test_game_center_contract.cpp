@@ -25,4 +25,17 @@ int main() {
     assert(CallbackLifetime::is_alive(token));
     lifetime.invalidate();
     assert(!CallbackLifetime::is_alive(token));
+
+    gamecenter::PanelRequestGate gate;
+    const auto first = gate.begin();
+    assert(first != 0);
+    assert(gate.begin() == 0); // leaderboard and achievements share the gate
+    assert(gate.finish(first)); // success, error or timeout releases the request
+    assert(!gate.finish(first)); // completion is delivered once
+    const auto retry = gate.begin();
+    assert(retry != 0 && retry != first);
+    assert(!gate.finish(first)); // late callback cannot release a newer request
+    assert(gate.begin() == 0);
+    assert(gate.finish(retry));
+    assert(gate.begin() != 0);
 }

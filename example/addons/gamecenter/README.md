@@ -61,6 +61,11 @@ loop; no method blocks while waiting for Apple services.
 | `panel_closed` | `panel: String` (`leaderboard` or `achievements`) |
 | `panel_failed` | `panel: String, error: String` |
 
+Panel calls load GameKit metadata before presenting. Missing App Store Connect
+definitions, authentication loss, API errors, a pending panel request, or a
+15-second metadata timeout emit `panel_failed`. Show that failure to the player
+and allow retry. A late response after timeout does not open a panel.
+
 Empty identifiers and invalid achievement percentages are rejected before GameKit is
 called. A failed result always includes a stable operation identifier and a readable
 error string.

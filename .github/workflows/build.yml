@@ -30,6 +30,12 @@ jobs:
       - name: Build Apple binaries
         run: tools/build_xcframework.sh
 
+      - name: Check queued iOS callback lifetime with AddressSanitizer
+        run: |
+          simulator_id="$(xcrun simctl list devices available --json | python3 -c 'import json,sys; data=json.load(sys.stdin); print(next(d["udid"] for runtime, devices in data["devices"].items() if ".iOS-" in runtime for d in devices if d["name"].startswith("iPhone")))')"
+          xcrun simctl bootstatus "$simulator_id" -b
+          tools/run_ios_callback_test.sh "$simulator_id"
+
       - name: Run repository and package tests
         run: python3 -m unittest discover -s tests -p 'test_*.py' -v
 
