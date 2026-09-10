@@ -1,5 +1,10 @@
 # Status — 2026-09-10
 
+Follow-up: the user preferred a simple game reference over the demo. README now
+has a **Games using GameCenterKit** section linking to GridLord's verified App
+Store listing. The original media remains archived under `marketing/media/gridlord/`.
+The delivery details below describe the initial demo work.
+
 ## Delivered changes
 
 - README: real GridLord iPhone demo, two frame captures and guarded GDScript example.

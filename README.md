@@ -9,33 +9,9 @@ submit leaderboard scores, report achievement progress, open native Game Center 
 and control the access point through one `Engine` singleton. Asynchronous results return
 as signals on Godot's main loop.
 
-## In a real game: GridLord
+## Games using GameCenterKit
 
-Watch GridLord open Apple's native leaderboard from its Godot UI and return to
-the game on an iPhone 11.
-
-<a href="marketing/media/gridlord/gridlord-gamecenter-demo.mp4"><img src="marketing/media/gridlord/gridlord-main-menu.png" width="240" alt="GridLord on iPhone — watch the Game Center demo"><img src="marketing/media/gridlord/gridlord-gamecenter-leaderboard.png" width="240" alt="Apple's native Game Center leaderboard opened by GridLord"></a>
-
-**[Watch the 21-second demo](marketing/media/gridlord/gridlord-gamecenter-demo.mp4)**
-· Real USB device capture · Silent · Player details blurred
-
-The recording uses GridLord 0.12.0 (build 30), iOS 26.4.2 and prerelease Game
-Center configuration. Apple's prerelease notice is retained. See
-[capture details](marketing/media/gridlord/README.md).
-
-After authenticating the local player, the leaderboard button needs only:
-
-```gdscript
-func open_scores() -> void:
-	if OS.get_name() != "iOS" or not Engine.has_singleton("GameCenterKit"):
-		return
-	var game_center = Engine.get_singleton("GameCenterKit")
-	if game_center.is_authenticated():
-		game_center.show_leaderboard("com.debiva.gridlord.leaderboard.main")
-```
-
-Use your own App Store Connect leaderboard ID. Connect `panel_failed` to your
-error UI and `panel_closed` to restore any controls disabled while the panel is open.
+- **[GridLord](https://apps.apple.com/app/id6791278226)** — A block puzzle game by DEBIVA.
 
 ## Features
 
