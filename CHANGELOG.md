@@ -2,6 +2,20 @@
 
 All notable changes to GameCenterKit are documented in this file.
 
+## [1.0.1] - 2026-09-11
+
+### Fixed
+
+- Validate leaderboard and achievement metadata before presenting native panels.
+- Report unavailable metadata and presentation timeouts through failure signals.
+- Prevent overlapping native panel requests and safely own queued callback state.
+
+### Distribution
+
+- Publish the same provenance-verified 1.0.1 package submitted to the Godot Asset
+  Store on 2026-09-05, including the maintainer-tested native binaries from
+  source `e2e4798`. Public API and supported Apple platforms are unchanged.
+
 ## [1.0.0] - 2026-09-04
 
 ### Added
